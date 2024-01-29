@@ -1,0 +1,301 @@
+import logging
+from collections.abc import Sequence
+from datetime import date, datetime
+from enum import IntEnum, StrEnum, unique
+from http import HTTPStatus
+from types import MappingProxyType
+from typing import ClassVar
+
+from aiohttp import ClientResponse, ClientSession, hdrs
+from aiomisc import asyncbackoff
+from pydantic import BaseModel, Field, ValidationError
+from yarl import URL
+
+from vk_parser.clients.base.client import BaseHttpClient
+from vk_parser.clients.base.root_handler import ResponseHandlersType
+from vk_parser.clients.base.timeout import TimeoutType
+
+log = logging.getLogger(__name__)
+
+VK_API_BASE_URL = URL("https://api.vk.com")
+
+
+class VkGroupWallType(IntEnum):
+    OFF = 0
+    OPEN = 1
+    LIMITED = 2
+    CLOSED = 3
+
+
+class VkGroup(BaseModel):
+    id: int
+    name: str
+    screen_name: str
+    members_count: int
+    wall: VkGroupWallType
+
+
+class VkGroups(BaseModel):
+    groups: Sequence[VkGroup]
+
+
+class VkLastSeen(BaseModel):
+    platform: int
+    time: datetime
+
+
+class VkGroupMember(BaseModel):
+    id: int
+    birth_date: str | None = Field(alias="bdate", default=None)
+    first_name: str | None = None
+    last_name: str | None = None
+    last_seen: VkLastSeen | None = None
+
+    def in_age_range(self, max_age: int) -> bool:
+        if not self.birth_date:
+            return False
+        try:
+            birth_dt = datetime.strptime(self.birth_date, "%d.%m.%Y")
+        except ValueError:
+            return False
+        today = datetime.now()
+        age = today.year - birth_dt.year
+        if (today.month, today.day) < (birth_dt.month, birth_dt.day):
+            age -= 1
+        return age <= max_age
+
+    @property
+    def parsed_birth_date(self) -> date | None:
+        if self.birth_date is None:
+            return None
+        try:
+            birth_dt = datetime.strptime(self.birth_date, "%d.%m.%Y")
+        except ValueError:
+            return None
+        return birth_dt.date()
+
+    @property
+    def last_visit_vk_date(self) -> date | None:
+        return self.last_seen.time.date() if self.last_seen else None
+
+
+class VkGroupMembers(BaseModel):
+    count: int
+    items: list[VkGroupMember]
+
+
+class VkWallPost(BaseModel):
+    id: int
+    owner_id: int
+    text: str
+    date: datetime
+    user_vk_ids: Sequence[int] = Field(default_factory=list)
+
+    @property
+    def date_without_tz(self) -> datetime:
+        return self.date.replace(tzinfo=None)
+
+
+class VkWallPosts(BaseModel):
+    count: int
+    items: Sequence[VkWallPost]
+
+
+@unique
+class VkObjectType(StrEnum):
+    USER = "user"
+    GROUP = "group"
+    EVENT = "event"
+    PAGE = "page"
+    APPLICATION = "application"
+    VK_APP = "vk_app"
+
+
+class VkResolvedObject(BaseModel):
+    object_id: int
+    type: VkObjectType
+
+
+async def parse_wall_posts(response: ClientResponse) -> VkWallPosts | None:
+    data = await response.json()
+    try:
+        posts = VkWallPosts(**data["response"])
+    except ValidationError:
+        return None
+    return posts
+
+
+async def parse_vk_group(response: ClientResponse) -> VkGroup | None:
+    data = await response.json()
+    try:
+        groups = VkGroups(**data["response"])
+    except ValidationError:
+        return None
+    return groups.groups[0]
+
+
+async def parse_group_members(response: ClientResponse) -> VkGroupMembers | None:
+    data = await response.json()
+    try:
+        group_members = VkGroupMembers(**data["response"])
+    except ValidationError:
+        return None
+    return group_members
+
+
+async def parse_ping(resp: ClientResponse) -> bool:
+    data = await resp.json()
+    if "error" in data:
+        return False
+    return True
+
+
+async def parse_resolve_screen_name(resp: ClientResponse) -> VkResolvedObject | None:
+    data = await resp.json()
+    try:
+        resolved_object = VkResolvedObject(**data["response"])
+    except (ValidationError, KeyError):
+        return None
+    return resolved_object
+
+
+class Vk(BaseHttpClient):
+    DEFAULT_TIMEOUT: ClassVar[TimeoutType] = 5
+
+    GET_GROUP_BY_ID_HANDLERS: ResponseHandlersType = MappingProxyType(
+        {
+            HTTPStatus.OK: parse_vk_group,
+        }
+    )
+
+    GET_GROUP_MEMBERS_HANDLERS: ResponseHandlersType = MappingProxyType(
+        {
+            HTTPStatus.OK: parse_group_members,
+        }
+    )
+
+    GET_WALL_POSTS_HANDLERS: ResponseHandlersType = MappingProxyType(
+        {
+            HTTPStatus.OK: parse_wall_posts,
+        }
+    )
+
+    GET_PING_HANDLERS: ResponseHandlersType = MappingProxyType(
+        {
+            HTTPStatus.OK: parse_ping,
+        }
+    )
+
+    RESOLVE_SCREEN_NAME: ResponseHandlersType = MappingProxyType(
+        {
+            HTTPStatus.OK: parse_resolve_screen_name,
+        }
+    )
+
+    DEFAULT_FIELDS_GROUPS_GET_BY_ID: ClassVar[Sequence[str]] = ("members_count", "wall")
+    DEFAULT_FIELDS_GROUPS_GET_MEMBERS: ClassVar[Sequence[str]] = ("bdate", "last_seen")
+
+    def __init__(
+        self,
+        url: URL,
+        session: ClientSession,
+        vk_api_service_token: str,
+        vk_api_version: str,
+        client_name: str | None = None,
+    ):
+        super().__init__(url, session, client_name)
+        self._default_kwargs = {
+            "access_token": vk_api_service_token,
+            "v": vk_api_version,
+        }
+
+    @asyncbackoff(12, pause=1, max_tries=8, deadline=None, exceptions=(Exception,))
+    async def get_group_by_id(
+        self,
+        group_id: int,
+        fields: Sequence[str] = DEFAULT_FIELDS_GROUPS_GET_BY_ID,
+        timeout: TimeoutType = DEFAULT_TIMEOUT,
+    ) -> VkGroup | None:
+        return await self._make_req(
+            method=hdrs.METH_POST,
+            url=self._url / "method/groups.getById",
+            handlers=self.GET_GROUP_BY_ID_HANDLERS,
+            timeout=timeout,
+            data={
+                "group_id": group_id,
+                "fields": ",".join(fields),
+                **self._default_kwargs,
+            },
+        )
+
+    @asyncbackoff(12, pause=1, max_tries=8, deadline=None, exceptions=(Exception,))
+    async def get_group_members(
+        self,
+        group_id: int,
+        offset: int = 0,
+        fields: Sequence[str] = DEFAULT_FIELDS_GROUPS_GET_MEMBERS,
+        count: int = 1000,
+        timeout: TimeoutType = DEFAULT_TIMEOUT,
+    ) -> VkGroupMembers | None:
+        return await self._make_req(
+            method=hdrs.METH_POST,
+            url=self._url / "method/groups.getMembers",
+            handlers=self.GET_GROUP_MEMBERS_HANDLERS,
+            timeout=timeout,
+            data={
+                "group_id": group_id,
+                "offset": offset,
+                "fields": ",".join(fields),
+                "count": count,
+                **self._default_kwargs,
+            },
+        )
+
+    @asyncbackoff(12, pause=1, max_tries=8, deadline=None, exceptions=(Exception,))
+    async def get_group_posts(
+        self,
+        group_id: int,
+        offset: int,
+        count: int = 100,
+        timeout: TimeoutType = DEFAULT_TIMEOUT,
+    ) -> VkWallPosts | None:
+        return await self._make_req(
+            method=hdrs.METH_POST,
+            url=self._url / "method/wall.get",
+            handlers=self.GET_WALL_POSTS_HANDLERS,
+            timeout=timeout,
+            data={
+                "owner_id": -group_id,
+                "offset": offset,
+                "count": count,
+                **self._default_kwargs,
+            },
+        )
+
+    async def ping(self, timeout: TimeoutType = DEFAULT_TIMEOUT) -> bool:
+        return await self._make_req(
+            method=hdrs.METH_POST,
+            url=self._url / "method/users.get",
+            handlers=self.GET_PING_HANDLERS,
+            timeout=timeout,
+            data={
+                "user_ids": 1,
+                **self._default_kwargs,
+            },
+        )
+
+    async def resolve_screen_name(
+        self,
+        screen_name: str,
+        timeout: TimeoutType = DEFAULT_TIMEOUT,
+    ) -> VkResolvedObject | None:
+        return await self._make_req(
+            method=hdrs.METH_POST,
+            url=self._url / "method/utils.resolveScreenName",
+            handlers=self.RESOLVE_SCREEN_NAME,
+            timeout=timeout,
+            data={
+                "screen_name": screen_name,
+                **self._default_kwargs,
+            },
+        )

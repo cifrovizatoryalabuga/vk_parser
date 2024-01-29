@@ -1,0 +1,46 @@
+import argparse
+
+import configargparse
+from aiomisc.log import LogFormat, LogLevel
+from yarl import URL
+
+parser = configargparse.ArgumentParser(
+    allow_abbrev=False,
+    auto_env_var_prefix="APP_",
+    description="VK parser",
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+)
+
+parser.add_argument("-D", "--debug", action="store_true")
+parser.add_argument("-s", "--pool-size", type=int, default=4, help="Thread pool size")
+parser.add_argument(
+    "--forks",
+    type=int,
+    default=4,
+    help="Number of process to download",
+)
+
+group = parser.add_argument_group("Logging options")
+group.add_argument(
+    "--log-level",
+    default=LogLevel.debug,
+    choices=LogLevel.choices(),
+)
+group.add_argument(
+    "--log-format",
+    default=LogFormat.color,
+    choices=LogFormat.choices(),
+)
+
+group = parser.add_argument_group("API options")
+group.add_argument("--api-address", default="127.0.0.1")
+group.add_argument("--api-port", type=int, default=8000)
+
+group = parser.add_argument_group("PostgreSQL options")
+group.add_argument("--pg-dsn", required=True, type=URL)
+
+group = parser.add_argument_group("AMQP options")
+group.add_argument("--amqp-dsn", required=True, type=URL)
+group.add_argument("--amqp-prefetch-count", type=int, default=4)
+group.add_argument("--amqp-retry-pause-seconds", type=int, default=60)
+group.add_argument("--amqp-retry-count-limit", type=int, default=2)

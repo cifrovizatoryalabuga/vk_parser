@@ -1,0 +1,114 @@
+[tool.poetry]
+name = "vk-parser"
+version = "0.1.0"
+description = "Parser for downloading group members"
+authors = ["Sergey Natalenko <sergey.natalenko@mail.ru>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiomisc = {extras = ["asgi", "rich", "uvloop"], version = "^17.3.41"}
+aiomisc-dependency = "^0.1.20"
+SQLAlchemy = "^2.0.25"
+alembic = "^1.13.1"
+asyncpg = "^0.29.0"
+ConfigArgParse = "^1.7"
+orjson = "^3.9.10"
+msgspec = "^0.18.5"
+pydantic = "^2.5.3"
+aiohttp-cors = "^0.7.0"
+aio-pika = "^9.3.1"
+greenlet = "^3.0.3"
+pytz = "^2023.3.post1"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.8.0"
+pre-commit = "^3.6.0"
+pytest = "^7.4.4"
+aiomisc-pytest = "^1.1.1"
+ruff = "^0.1.11"
+types-pytz = "^2023.3.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+python_files = "test_*"
+python_functions = "test_*"
+python_classes = "TestSuite*"
+addopts = "-p no:cacheprovider"
+
+[tool.black]
+target-version = ["py311"]
+
+[tool.isort]
+known_local_folder = ["vk_parser", "tests"]
+py_version = "311"
+profile = "black"
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+ignore_missing_imports = false
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = "aiomisc_dependency.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "configargparse.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "msgpack.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "aiohttp_cors.*"
+ignore_missing_imports = true
+
+[tool.ruff]
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".venv",
+]
+
+line-length = 88
+indent-width = 4
+
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "BLE",
+    "C90",
+    "E",
+    "F",
+    "G",
+    "I",
+    "ICN",
+    "ISC",
+    "PLE",
+    "Q",
+    "RUF006",
+    "RUF100",
+    "T10",
+    "T20",
+    "TID",
+    "UP",
+    "W",
+]
+ignore = ["ISC001"]
+fixable = ["ALL"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
