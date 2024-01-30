@@ -3,9 +3,9 @@ import logging
 from aiomisc import Service, entrypoint
 from aiomisc_log import basic_config
 
-from vk_parser.rest.arguments import parser
-from vk_parser.rest.deps import config_deps
-from vk_parser.rest.service import REST
+from vk_parser.admin.arguments import parser
+from vk_parser.admin.deps import config_deps
+from vk_parser.services.rest import REST
 
 log = logging.getLogger(__name__)
 

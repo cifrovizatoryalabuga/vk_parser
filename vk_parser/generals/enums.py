@@ -1,10 +1,19 @@
-from enum import StrEnum
+from enum import StrEnum, unique
 
 
+@unique
 class ParserTypes(StrEnum):
-    VK_SIMPLE_PARSED_POSTS = "VK_SIMPLE_PARSED_POSTS"
+    VK_DOWNLOAD_AND_PARSED_POSTS = "VK_DOWNLOAD_AND_PARSED_POSTS"
+    VK_SIMPLE_DOWNLOAD = "VK_SIMPLE_DOWNLOAD"
 
 
+VK_PARSER_TYPES = (
+    ParserTypes.VK_SIMPLE_DOWNLOAD,
+    ParserTypes.VK_DOWNLOAD_AND_PARSED_POSTS,
+)
+
+
+@unique
 class RequestStatus(StrEnum):
     PENDING = "PENDING"
     QUEUED = "QUEUED"

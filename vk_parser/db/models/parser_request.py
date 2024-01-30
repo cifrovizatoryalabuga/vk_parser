@@ -27,10 +27,9 @@ class ParserRequest(TimestampMixin, Base):
         JSON(),
         nullable=False,
     )
-    result: Mapped[dict[str, Any]] = mapped_column(
+    result_data: Mapped[dict[str, Any]] = mapped_column(
         JSON(),
-        nullable=False,
-        server_default="{ }",
+        nullable=True,
     )
     finished_at: Mapped[datetime | None] = mapped_column(
         DateTime(),

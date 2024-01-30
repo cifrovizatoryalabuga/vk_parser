@@ -4,6 +4,8 @@ import configargparse
 from aiomisc.log import LogFormat, LogLevel
 from yarl import URL
 
+from vk_parser.generals.enums import ParserTypes
+
 parser = configargparse.ArgumentParser(
     allow_abbrev=False,
     auto_env_var_prefix="APP_",
@@ -49,3 +51,8 @@ group.add_argument("--amqp-dsn", required=True, type=URL)
 group.add_argument("--amqp-prefetch-count", type=int, default=4)
 group.add_argument("--amqp-retry-pause-seconds", type=int, default=60)
 group.add_argument("--amqp-retry-count-limit", type=int, default=2)
+group.add_argument(
+    "--amqp-queue-name",
+    type=ParserTypes,
+    default=ParserTypes.VK_DOWNLOAD_AND_PARSED_POSTS,
+)

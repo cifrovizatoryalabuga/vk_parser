@@ -40,7 +40,7 @@ class VkGroups(BaseModel):
 
 
 class VkLastSeen(BaseModel):
-    platform: int
+    platform: int | None = None
     time: datetime
 
 

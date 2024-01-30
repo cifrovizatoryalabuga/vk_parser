@@ -1,7 +1,9 @@
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
+from typing import Any, TypeVar
 
-from sqlalchemy import insert
+import sqlalchemy.dialects.postgresql as postgresql
+from sqlalchemy import cast, delete, insert, not_, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from vk_parser.clients.vk import VkGroupMember, VkWallPost
@@ -79,3 +81,49 @@ class VkStorage:
         ]
         await session.execute(query, insert_data)
         await session.commit()
+
+    @inject_session
+    async def remove_users_except(
+        self,
+        session: AsyncSession,
+        ids: Iterable[int],
+    ) -> None:
+        query = delete(VkGroupUserDb).where(
+            VkGroupUserDb.vk_user_id.not_in(ids),
+        )
+        await session.execute(query)
+        await session.commit()
+
+    @inject_session
+    async def get_group_user_ids(
+        self,
+        session: AsyncSession,
+        group_id: int,
+    ) -> Sequence[int]:
+        query = select(VkGroupUserDb.vk_user_id).where(
+            VkGroupUserDb.vk_group_id == group_id
+        )
+        result = await session.execute(query)
+        return tuple(r[0] for r in result)
+
+    @inject_session
+    async def remove_posts_without_user_ids(
+        self,
+        session: AsyncSession,
+        ids: Iterable[int],
+    ) -> None:
+        bigint_arr = cast(postgresql.array(ids), postgresql.ARRAY(postgresql.BIGINT))
+        query = delete(VkGroupPostDb).where(
+            not_(VkGroupPostDb.user_vk_ids.overlap(bigint_arr)),
+        )
+        await session.execute(query)
+        await session.commit()
+
+
+NType = TypeVar("NType", bound=Any)
+
+
+def not_none(value: NType | None) -> NType:
+    if value is None:
+        raise ValueError
+    return value

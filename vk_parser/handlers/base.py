@@ -1,6 +1,7 @@
 from typing import TypeVar
 
 import orjson
+from aio_pika.patterns import Master
 from aiohttp.web import Request
 from aiohttp.web_exceptions import HTTPBadRequest
 from pydantic import BaseModel, ValidationError
@@ -8,7 +9,6 @@ from pydantic import BaseModel, ValidationError
 from vk_parser.generals.models.pagination import PaginationParams
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.ping import PingStorage
-from vk_parser.utils.amqp.master import MsgPackMaster
 
 ModelType = TypeVar("ModelType", bound=BaseModel)
 
@@ -29,7 +29,7 @@ class DependenciesMixin(BaseHttpMixin):
         return self.request.app["ping_storage"]
 
     @property
-    def amqp_master(self) -> MsgPackMaster:
+    def amqp_master(self) -> Master:
         return self.request.app["amqp_master"]
 
 
