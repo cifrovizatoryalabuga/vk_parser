@@ -62,6 +62,7 @@ def upgrade() -> None:
             ["parser_request_id"],
             ["parser_request.id"],
             name=op.f("fk__vk_group__parser_request_id__parser_request"),
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk__vk_group")),
     )
@@ -95,6 +96,7 @@ def upgrade() -> None:
             ["vk_group_id"],
             ["vk_group.id"],
             name=op.f("fk__vk_group_post__vk_group_id__vk_group"),
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk__vk_group_post")),
     )

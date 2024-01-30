@@ -12,7 +12,7 @@ class VkGroupPost(TimestampMixin, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     vk_group_id: Mapped[int] = mapped_column(
         BigInteger,
-        ForeignKey("vk_group.id"),
+        ForeignKey("vk_group.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )

@@ -9,6 +9,7 @@
 - Python 3.11
 - Aiohttp
 - Aiomisc
+- aio-pika
 - SQLAlchemy
 - Alembic
 - msgpack

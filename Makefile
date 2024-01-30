@@ -1,11 +1,41 @@
+PROJECT_PATH = ./vk_parser/
+TEST_PATH = ./tests/
+
+HELP_FUN = \
+	%help; while(<>){push@{$$help{$$2//'options'}},[$$1,$$3] \
+	if/^([\w-_]+)\s*:.*\#\#(?:@(\w+))?\s(.*)$$/}; \
+    print"$$_:\n", map"  $$_->[0]".(" "x(20-length($$_->[0])))."$$_->[1]\n",\
+    @{$$help{$$_}},"\n" for keys %help; \
+
+help: ##@Help Show this help
+	@echo -e "Usage: make [target] ...\n"
+	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
+
 clean_dev:
 	rm -rf .venv/
 
-develop: clean_dev
+develop: clean_dev  ##@Develop Create project venv
 	python3.11 -m venv .venv
 	.venv/bin/pip install -U pip poetry
 	.venv/bin/poetry config virtualenvs.create false
 	.venv/bin/poetry install
 
-local:
+local:  ##@Develop Run db and rabbitmq containers
 	docker-compose -f docker-compose.dev.yaml up --force-recreate --renew-anon-volumes --build
+
+local-down: ##@Develop Stop containers with delete volumes
+	docker-compose -f docker-compose.dev.yaml down -v
+
+lint-ci: flake ruff bandit mypy  ##@Linting Run all linters in CI
+
+flake: ##@Linting Run flake8
+	.venv/bin/flake8 --max-line-length 88 --format=default $(PROJECT_PATH) 2>&1 | tee flake8.txt
+
+ruff: ##@Linting Run ruff
+	.venv/bin/ruff check $(PROJECT_PATH)
+
+bandit: ##@Linting Run bandit
+	.venv/bin/bandit -r -ll -iii $(PROJECT_PATH) -f json -o ./bandit.json
+
+mypy: ##@Linting Run mypy
+	.venv/bin/mypy --config-file ./pyproject.toml $(PROJECT_PATH)

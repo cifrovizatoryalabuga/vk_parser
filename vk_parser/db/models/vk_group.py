@@ -8,7 +8,7 @@ class VkGroup(TimestampMixin, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     parser_request_id: Mapped[int] = mapped_column(
         BigInteger,
-        ForeignKey("parser_request.id"),
+        ForeignKey("parser_request.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )

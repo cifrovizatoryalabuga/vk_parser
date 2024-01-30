@@ -10,12 +10,34 @@ services:
       POSTGRES_DB: $POSTGRES_DB
     ports:
       - 5432:5432
+    healthcheck:
+      test: [CMD-SHELL, pg_isready]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
   rabbitmq:
-    image: rabbitmq:3
+    image: rabbitmq:3-management
     restart: unless-stopped
     environment:
       RABBITMQ_DEFAULT_USER: $RABBITMQ_DEFAULT_USER
       RABBITMQ_DEFAULT_PASS: $RABBITMQ_DEFAULT_PASS
     ports:
       - 5672:5672
-      - 8092:8080
+      - 8001:15672
+
+  admin:
+    image: andytakker/vk-parser:latest
+    entrypoint: python -m vk_parser.admin
+    ports:
+      - 8000:80
+    environment:
+      APP_API_ADDRESS: 0.0.0.0
+      APP_API_PORT: 80
+
+      APP_PG_DSN: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
+      APP_AMQP_DSN: $AMQP_DSN
+      APP_AMQP_PREFETCH_COUNT: $AMQP_PREFETCH_COUNT
+      APP_AMQP_RETRY_PAUSE_SECONDS: $AMQP_RETRY_PAUSE_SECONDS
+      APP_AMQP_RETRY_COUNT_LIMIT: $AMQP_RETRY_COUNT_LIMIT

@@ -1,0 +1,31 @@
+name: Check project in all branches
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - master
+      - develop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checking:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: make develop
+
+      - name: Run CI linters
+        run: make lint-ci
