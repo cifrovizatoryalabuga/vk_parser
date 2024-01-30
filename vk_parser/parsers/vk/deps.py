@@ -3,7 +3,8 @@ from argparse import Namespace
 from collections.abc import AsyncGenerator, AsyncIterator
 
 import aio_pika
-from aio_pika.abc import AbstractChannel, AbstractConnection
+from aio_pika.abc import AbstractConnection
+from aio_pika.patterns import Master
 from aiomisc_dependency import dependency
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
@@ -99,9 +100,9 @@ def config_deps(args: Namespace) -> None:
         log.info("AMQP connection was closed")
 
     @dependency
-    async def amqp_parsing_channel(
+    async def amqp_master(
         amqp: AbstractConnection,
-    ) -> AsyncIterator[AbstractChannel]:
+    ) -> AsyncIterator[Master]:
         async with amqp.channel() as channel:
             await channel.set_qos(
                 prefetch_count=args.amqp_prefetch_count,
@@ -110,6 +111,6 @@ def config_deps(args: Namespace) -> None:
                 "Rmq channel for parsing created with prefetch count %d",
                 args.amqp_prefetch_count,
             )
-            yield channel
+            yield Master(channel)
 
     return

@@ -1,0 +1,16 @@
+@startuml architecture
+actor "User" as user
+component "Admin" <<Master>> as admin
+component "simple vk" <<Worker>> as w1
+component "parse post vk" <<Worker>> as w2
+queue "RabbitMQ" <<Queue>> as q
+database "PostgreSQL" <<Database>> as db
+
+user -> admin
+admin --> q
+admin --> db
+q <-- w1
+q <-- w2
+db <-- w1
+db <-- w2
+@enduml

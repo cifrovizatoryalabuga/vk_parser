@@ -9,8 +9,12 @@ from pydantic import HttpUrl
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from vk_parser.clients.vk import Vk, VkGroupMember, VkObjectType, VkWallPost
-from vk_parser.generals.models.amqp import AmqpVkInputData
-from vk_parser.generals.models.parser_request import ResultData, UserStat
+from vk_parser.generals.models.parser_request import (
+    ParsePostsVkInputData,
+    ResultData,
+    SimpleVkInputData,
+    UserStat,
+)
 from vk_parser.generals.models.vk_group import VkGroup
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.vk import VkStorage
@@ -26,21 +30,32 @@ class PostVkParser:
     parser_request_storage: ParserRequestStorage
     session_factory: async_sessionmaker[AsyncSession]
 
-    async def process_request(self, input_data: AmqpVkInputData) -> None:
+    async def process_request(
+        self,
+        parser_request_id: int,
+        input_data: ParsePostsVkInputData,
+    ) -> None:
         try:
-            await self._process(input_data=input_data)
-        except ValueError as e:
+            await self._process(
+                parser_request_id=parser_request_id,
+                input_data=input_data,
+            )
+        except Exception as e:  # noqa: BLE001
             await self.parser_request_storage.save_error(
-                id_=input_data.parser_request_id,
+                id_=parser_request_id,
                 finished_at=datetime.now(),
                 error_message=str(e),
             )
             log.warning("Error processing with data: %s", input_data)
 
-    async def _process(self, input_data: AmqpVkInputData) -> None:
+    async def _process(
+        self,
+        parser_request_id: int,
+        input_data: ParsePostsVkInputData,
+    ) -> None:
         vk_group_id = await self._get_group_id(url=input_data.group_url)
         vk_group = await self.vk_storage.create_group(
-            parser_request_id=input_data.parser_request_id,
+            parser_request_id=parser_request_id,
             vk_id=vk_group_id,
             url=str(input_data.group_url),
         )
@@ -57,7 +72,7 @@ class PostVkParser:
         posts, users = await tasks
         if not posts or not users:
             await self.parser_request_storage.save_empty_result(
-                id_=input_data.parser_request_id,
+                id_=parser_request_id,
                 finished_at=datetime.now(),
                 message="Empty group users"
                 if not users
@@ -75,7 +90,7 @@ class PostVkParser:
         user_ids = await self.vk_storage.get_group_user_ids(group_id=vk_group.id)
         if not user_ids:
             await self.parser_request_storage.save_empty_result(
-                id_=input_data.parser_request_id,
+                id_=parser_request_id,
                 finished_at=datetime.now(),
                 message="Empty intersection users and posts",
             )
@@ -84,7 +99,7 @@ class PostVkParser:
 
         result_data = await self._calculate_result(user_ids, users_in_posts)
         await self.parser_request_storage.save_successful_result(
-            id_=input_data.parser_request_id,
+            id_=parser_request_id,
             result_data=result_data,
             finished_at=datetime.now(),
         )
@@ -178,21 +193,27 @@ class SimpleVkParser:
     parser_request_storage: ParserRequestStorage
     session_factory: async_sessionmaker[AsyncSession]
 
-    async def process_request(self, input_data: AmqpVkInputData) -> None:
+    async def process_request(
+        self, parser_request_id: int, input_data: SimpleVkInputData
+    ) -> None:
         try:
-            await self._process(input_data=input_data)
-        except ValueError as e:
+            await self._process(
+                parser_request_id=parser_request_id, input_data=input_data
+            )
+        except Exception as e:  # noqa: BLE001
             await self.parser_request_storage.save_error(
-                id_=input_data.parser_request_id,
+                id_=parser_request_id,
                 finished_at=datetime.now(),
                 error_message=str(e),
             )
             log.warning("Error processing with data: %s", input_data)
 
-    async def _process(self, input_data: AmqpVkInputData) -> None:
+    async def _process(
+        self, parser_request_id: int, input_data: SimpleVkInputData
+    ) -> None:
         vk_group_id = await self._get_group_id(url=input_data.group_url)
         vk_group = await self.vk_storage.create_group(
-            parser_request_id=input_data.parser_request_id,
+            parser_request_id=parser_request_id,
             vk_id=vk_group_id,
             url=str(input_data.group_url),
         )
@@ -203,7 +224,7 @@ class SimpleVkParser:
 
         if not users:
             await self.parser_request_storage.save_empty_result(
-                id_=input_data.parser_request_id,
+                id_=parser_request_id,
                 finished_at=datetime.now(),
                 message="Empty group users"
                 if not users
@@ -217,7 +238,7 @@ class SimpleVkParser:
         )
 
         await self.parser_request_storage.save_successful_result(
-            id_=input_data.parser_request_id,
+            id_=parser_request_id,
             result_data=ResultData(message="Successful finished", user_stat=[]),
             finished_at=datetime.now(),
         )
