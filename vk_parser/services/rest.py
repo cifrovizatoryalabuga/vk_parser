@@ -26,7 +26,6 @@ HandlersType = tuple[tuple[str, str, Any], ...]
 
 class REST(AIOHTTPService):
     __dependencies__ = (
-        # "amqp_master",
         "parser_request_storage",
         "ping_storage",
         "amqp_master",

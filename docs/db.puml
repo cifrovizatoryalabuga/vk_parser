@@ -1,0 +1,47 @@
+@startuml db
+map parser_request {
+id => biginteger
+status => string
+input_data => json
+result_data => * json
+finished_at => * datetime
+error_message => * string
+created_at => datetime
+updated_at => datetime
+}
+map vk_group {
+id => biginteger
+parser_request_id => biginteger
+vk_id => biginteger
+url => string
+created_at => datetime
+updated_at => datetime
+}
+
+map vk_group_post {
+id => biginteger
+vk_group_id => biginteger
+posted_at => datetime
+text => string
+user_vk_ids => array
+created_at => datetime
+updated_at => datetime
+}
+
+map vk_group_user {
+id => biginteger
+vk_group_id => biginteger
+vk_user_id => biginteger
+raw_data => json
+birth_date => *date
+first_name => *string
+last_name => *string
+last_visit_vk_date => *date
+created_at => datetime
+updated_at => datetime
+}
+
+parser_request::id --> vk_group::parser_request_id
+vk_group::id --> vk_group_post::vk_group_id
+vk_group::id --> vk_group_user::vk_group_id
+@enduml

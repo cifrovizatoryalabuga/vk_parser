@@ -3,8 +3,10 @@ from aiohttp.web_exceptions import HTTPInternalServerError
 from aiomisc import timeout
 
 from vk_parser.generals.enums import RequestStatus
-from vk_parser.generals.models.amqp import AmqpVkInputData
-from vk_parser.generals.models.parser_request import VkInputData
+from vk_parser.generals.models.parser_request import (
+    ParsePostsVkInputData,
+    SimpleVkInputData,
+)
 from vk_parser.handlers.base import CreateMixin, DependenciesMixin
 from vk_parser.utils.http import fast_json_response
 
@@ -12,7 +14,9 @@ from vk_parser.utils.http import fast_json_response
 class ParserRequestCreateHandler(View, DependenciesMixin, CreateMixin):
     @timeout(5)
     async def post(self) -> Response:
-        input_data = await self._parse_json(schema_type=VkInputData)
+        input_data = await self._parse_json(
+            schemas=[ParsePostsVkInputData, SimpleVkInputData],
+        )
 
         parser_request = await self.parser_request_storage.create(
             input_data=input_data.model_dump(mode="json"),
@@ -20,12 +24,10 @@ class ParserRequestCreateHandler(View, DependenciesMixin, CreateMixin):
         if parser_request is None:
             raise HTTPInternalServerError(reason="Can't create parser request")
         await self.amqp_master.create_task(
-            input_data.parser_type,
+            input_data.parser_type,  # type: ignore[attr-defined]
             kwargs=dict(
-                input_data=AmqpVkInputData(
-                    parser_request_id=parser_request.id,
-                    **input_data.model_dump(),
-                )
+                parser_request_id=parser_request.id,
+                **input_data.model_dump(),
             ),
         )
         parser_request = (

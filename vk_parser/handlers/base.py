@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import TypeVar
 
 import orjson
@@ -42,11 +43,22 @@ class ListMixin(BaseHttpMixin):
 
 
 class CreateMixin(BaseHttpMixin):
-    async def _parse_json(self, schema_type: type[ModelType]) -> ModelType:
+    async def _parse_json(self, schemas: Sequence[type[BaseModel]]) -> BaseModel:
+        result = None
+        for schema in schemas:
+            result = await self._parse_schema(schema)
+            match result:
+                case BaseModel():
+                    return result
+                case orjson.JSONDecodeError():
+                    raise HTTPBadRequest(reason="Invalid input params")
+        if isinstance(result, ValidationError):
+            raise HTTPBadRequest(text=result.json())
+        raise HTTPBadRequest(reason="Incorrent input")
+
+    async def _parse_schema(self, schema: type[ModelType]) -> ModelType | Exception:
         try:
             data = await self.request.json(loads=orjson.loads)
-            return schema_type.model_validate(data)
-        except orjson.JSONDecodeError:
-            raise HTTPBadRequest(reason="Invalid input params")
-        except ValidationError as e:
-            raise HTTPBadRequest(text=e.json())
+            return schema.model_validate(data)
+        except (ValidationError, orjson.JSONDecodeError) as e:
+            return e
