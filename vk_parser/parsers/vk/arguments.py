@@ -34,10 +34,6 @@ group.add_argument(
     choices=LogFormat.choices(),
 )
 
-group = parser.add_argument_group("API options")
-group.add_argument("--api-address", default="127.0.0.1")
-group.add_argument("--api-port", type=int, default=8000)
-
 group = parser.add_argument_group("VK API tokens")
 group.add_argument("--vk-api-secure-key", type=str, required=True)
 group.add_argument("--vk-api-service-token", type=str, required=True)
