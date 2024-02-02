@@ -41,13 +41,18 @@
           </thead>
 
           <tbody>
-            {% for item in users %}
+            {% for item in user_data %}
             <tr class="waves-efffect">
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.vk_user_id }}</a></td>
-              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}>">{{ item.first_name }}</a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.first_name }}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.last_name }}</span></a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format }}{% endif %}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
+              <td>
+              {% for post in user_data.posts %}
+              <a target="_blank" rel="noopener noreferrer" href="{{ post.url }}">{{ post.text }}</a>
+              {% endfor %}
+              </td>
             </tr>
             {% endfor %}
           </tbody>

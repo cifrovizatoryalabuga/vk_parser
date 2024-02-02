@@ -77,6 +77,7 @@ def upgrade() -> None:
     op.create_table(
         "vk_group_post",
         sa.Column("id", sa.BigInteger(), nullable=False),
+        sa.Column("vk_post_id", sa.BigInteger(), nullable=False),
         sa.Column("vk_group_id", sa.BigInteger(), nullable=False),
         sa.Column("posted_at", sa.DateTime(), nullable=False),
         sa.Column("text", sa.String(), nullable=False),

@@ -16,6 +16,10 @@ class VkGroupPost(TimestampMixin, Base):
         nullable=False,
         index=True,
     )
+    vk_post_id: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+    )
     posted_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,

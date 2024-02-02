@@ -12,6 +12,7 @@ from vk_parser.db.models.vk_group_post import VkGroupPost as VkGroupPostDb
 from vk_parser.db.models.vk_group_user import VkGroupUser as VkGroupUserDb
 from vk_parser.db.utils import inject_session
 from vk_parser.generals.models.vk_group import VkGroup
+from vk_parser.generals.models.vk_group_post import VkGroupPost
 from vk_parser.generals.models.vk_group_user import VkGroupUser
 
 
@@ -50,6 +51,7 @@ class VkStorage:
         query = insert(VkGroupPostDb)
         insert_data = [
             {
+                "vk_post_id": post.id,
                 "vk_group_id": group_id,
                 "posted_at": post.date_without_tz,
                 "text": post.text,
@@ -119,6 +121,20 @@ class VkStorage:
         )
         await session.execute(query)
         await session.commit()
+
+    @inject_session
+    async def get_posts_by_parser_request_id(
+        self,
+        session: AsyncSession,
+        parser_request_id: int,
+    ) -> Sequence[VkGroupPost]:
+        query = (
+            select(VkGroupPostDb)
+            .join(VkGroupDb, VkGroupDb.id == VkGroupPostDb.vk_group_id)
+            .where(VkGroupDb.parser_request_id == parser_request_id)
+        )
+        res = await session.scalars(query)
+        return [VkGroupPost.model_validate(row) for row in res]
 
     @inject_session
     async def get_users_by_parser_request_id(
