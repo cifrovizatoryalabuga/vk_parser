@@ -10,7 +10,7 @@ class ParserRequestDetailHandler(View, DependenciesMixin):
     @timeout(5)
     async def get(self) -> Response:
         parser_request_id = self._get_id()
-        obj = await self.parser_request_storage.get_detail_parser_request_by_id(
+        obj = await self.parser_request_storage.get_detail(
             id_=parser_request_id,
         )
         if obj is None:

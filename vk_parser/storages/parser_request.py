@@ -54,7 +54,7 @@ class ParserRequestStorage(PaginationMixin):
         )
 
     @inject_session
-    async def get_detail_parser_request_by_id(
+    async def get_detail(
         self,
         session: AsyncSession,
         id_: int,

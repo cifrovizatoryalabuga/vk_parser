@@ -27,6 +27,32 @@
       <h5>Результат</h5>
         <a href="/admin/parsers/{{parser_request.id}}/users/" class="waves-effect waves-light btn-small"><i class="material-icons left">cloud</i>Скачать таблицу пользователей (csv)</a>
       </div>
+      <br>
+      {% if parser_request.parser_type == "VK_DOWNLOAD_AND_PARSED_POSTS"%}
+       <table class="striped highlight">
+          <thead>
+            <tr>
+                <th>VK ID</th>
+                <th>Фамилия</th>
+                <th>Имя</th>
+                <th>Дата рождения</th>
+                <th>Последний вход в ВК</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for item in users %}
+            <tr class="waves-efffect">
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.vk_user_id }}</a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}>">{{ item.first_name }}</a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.last_name }}</span></a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format }}{% endif %}</a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
     </div>
     {% endif %}
   </div>

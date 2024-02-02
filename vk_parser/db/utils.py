@@ -44,7 +44,7 @@ def create_async_engine(connection_uri: str, **engine_kwargs: Any) -> AsyncEngin
         engine_kwargs["json_serializer"] = dumps
     if engine_kwargs.get("json_deserializer") is None:
         engine_kwargs["json_deserializer"] = orjson.loads
-    return sa_create_async_engine(url=connection_uri, echo=True, **engine_kwargs)
+    return sa_create_async_engine(url=connection_uri, **engine_kwargs)
 
 
 def create_async_session_factory(
