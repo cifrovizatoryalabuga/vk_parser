@@ -64,7 +64,7 @@ services:
       - db
       - rabbitmq
     restart: unless-stopped
-    image: andytakker/vk-parser:latest 
+    image: andytakker/vk-parser:latest
     entrypoint: python -m vk_parser.parsers.vk --amqp-queue-name=VK_DOWNLOAD_AND_PARSED_POSTS
     environment:
       APP_VK_API_SECURE_KEY: $VK_API_SECURE_KEY
