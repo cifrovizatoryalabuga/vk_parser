@@ -2,7 +2,7 @@ from aiohttp.web import Response, View
 from aiohttp.web_exceptions import HTTPBadRequest, HTTPNotFound
 from aiomisc import timeout
 
-from vk_parser.handlers.base import DependenciesMixin
+from vk_parser.admin.handlers.base import DependenciesMixin
 from vk_parser.utils.http import fast_json_response
 
 

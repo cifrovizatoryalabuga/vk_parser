@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Sequence
 from typing import TypeVar
 
@@ -10,6 +11,9 @@ from pydantic import BaseModel, ValidationError
 from vk_parser.generals.models.pagination import PaginationParams
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.ping import PingStorage
+from vk_parser.storages.vk import VkStorage
+
+log = logging.getLogger(__name__)
 
 ModelType = TypeVar("ModelType", bound=BaseModel)
 
@@ -28,6 +32,10 @@ class DependenciesMixin(BaseHttpMixin):
     @property
     def ping_storage(self) -> PingStorage:
         return self.request.app["ping_storage"]
+
+    @property
+    def vk_storage(self) -> VkStorage:
+        return self.request.app["vk_storage"]
 
     @property
     def amqp_master(self) -> Master:
@@ -62,3 +70,19 @@ class CreateMixin(BaseHttpMixin):
             return schema.model_validate(data)
         except (ValidationError, orjson.JSONDecodeError) as e:
             return e
+
+    async def parse_form(self, schemas: Sequence[type[BaseModel]]) -> BaseModel | None:
+        result = None
+        for schema in schemas:
+            result = await self._parse_form(schema)
+            if result:
+                return result
+        return None
+
+    async def _parse_form(self, schema: type[ModelType]) -> ModelType | None:
+        try:
+            data = await self.request.post()
+            return schema.model_validate(data)
+        except ValidationError:
+            log.warning("Incorrect form data: %s", data, exc_info=True)
+            return None

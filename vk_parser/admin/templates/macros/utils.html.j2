@@ -1,0 +1,16 @@
+{% macro badge(status) -%}
+{% if status == "PENDING" %}
+<span class="badge yellow black-text">{{status}}</span>
+{% elif status == "QUEUED" %}
+<span class="badge cyan black-text">{{status}}</span>
+{% elif status == "PROCESSING" %}
+<span class="badge blue white-text">{{status}}</span>
+{% elif status == "FAILED" %}
+<span class="badge red white-text">{{status}}</span>
+{% elif status == "EMPTY" %}
+<span class="badge grey lighten-4 black-text">{{status}}</span>
+{% elif status == "SUCCESSFUL" %}
+<span class="badge green white-text">{{status}}</span>
+{% endif %}
+
+{%- endmacro %}

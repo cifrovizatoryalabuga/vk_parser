@@ -1,16 +1,17 @@
 import logging
-from collections.abc import Mapping
+from asyncio import gather
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import ScalarResult, insert, select, update
+from sqlalchemy import ScalarResult, func, insert, select, update
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from vk_parser.db.models.parser_request import ParserRequest as ParserRequestDb
 from vk_parser.db.utils import inject_session
-from vk_parser.generals.enums import RequestStatus
+from vk_parser.generals.enums import ParserTypes, RequestStatus
 from vk_parser.generals.models.pagination import PaginationResponse
 from vk_parser.generals.models.parser_request import (
     DetailParserRequest,
@@ -37,6 +38,19 @@ class ParserRequestStorage(PaginationMixin):
             page=page,
             page_size=page_size,
             model_type=ParserRequest,
+        )
+
+    async def admin_pagination(
+        self,
+        page: int,
+        page_size: int,
+    ) -> PaginationResponse[DetailParserRequest]:
+        query = select(ParserRequestDb).order_by(ParserRequestDb.created_at.desc())
+        return await self._paginate(
+            query=query,
+            page=page,
+            page_size=page_size,
+            model_type=DetailParserRequest,
         )
 
     @inject_session
@@ -165,3 +179,25 @@ class ParserRequestStorage(PaginationMixin):
             await session.commit()
         except DBAPIError:
             log.warning("Error save error")
+
+    @inject_session
+    async def stat_by_type(
+        self, session: AsyncSession, parser_type: ParserTypes
+    ) -> tuple[ParserTypes, Sequence[tuple[RequestStatus, int]]]:
+        query = (
+            select(ParserRequestDb.status, func.count())
+            .group_by(
+                ParserRequestDb.status,
+            )
+            .filter(ParserRequestDb.input_data["parser_type"].astext == parser_type)
+        )
+        return parser_type, (await session.execute(query)).fetchall()  # type: ignore[return-value]
+
+    async def stat(self) -> Sequence[tuple[ParserTypes, RequestStatus, int]]:
+        tasks = [self.stat_by_type(parser_type=pt) for pt in ParserTypes]
+        stat = await gather(*tasks)
+        output = []
+        for pt, res in stat:
+            for req_status, count in res:
+                output.append((pt, req_status, count))
+        return output

@@ -21,6 +21,7 @@ aiohttp-cors = "^0.7.0"
 aio-pika = "^9.3.1"
 greenlet = "^3.0.3"
 pytz = "^2023.3.post1"
+aiohttp-jinja2 = "^1.6"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.8.0"

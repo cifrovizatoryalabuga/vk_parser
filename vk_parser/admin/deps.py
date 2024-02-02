@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from vk_parser.db.utils import create_async_engine, create_async_session_factory
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.ping import PingStorage
+from vk_parser.storages.vk import VkStorage
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +37,12 @@ def config_deps(args: Namespace) -> None:
         return PingStorage(
             session_factory=session_factory,
         )
+
+    @dependency
+    def vk_storage(
+        session_factory: async_sessionmaker[AsyncSession],
+    ) -> VkStorage:
+        return VkStorage(session_factory=session_factory)
 
     @dependency
     def parser_request_storage(

@@ -4,11 +4,13 @@ from asyncio import gather
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 from pydantic import HttpUrl
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from vk_parser.clients.vk import Vk, VkGroupMember, VkObjectType, VkWallPost
+from vk_parser.generals.enums import RequestStatus
 from vk_parser.generals.models.parser_request import (
     ParsePostsVkInputData,
     ResultData,
@@ -33,12 +35,16 @@ class PostVkParser:
     async def process_request(
         self,
         parser_request_id: int,
-        input_data: ParsePostsVkInputData,
+        input_data: dict[str, Any],
     ) -> None:
+        await self.parser_request_storage.update_status(
+            id_=parser_request_id,
+            status=RequestStatus.PROCESSING,
+        )
         try:
             await self._process(
                 parser_request_id=parser_request_id,
-                input_data=input_data,
+                input_data=ParsePostsVkInputData(**input_data),
             )
         except Exception as e:  # noqa: BLE001
             await self.parser_request_storage.save_error(
@@ -194,11 +200,16 @@ class SimpleVkParser:
     session_factory: async_sessionmaker[AsyncSession]
 
     async def process_request(
-        self, parser_request_id: int, input_data: SimpleVkInputData
+        self, parser_request_id: int, input_data: dict[str, Any]
     ) -> None:
+        await self.parser_request_storage.update_status(
+            id_=parser_request_id,
+            status=RequestStatus.PROCESSING,
+        )
         try:
             await self._process(
-                parser_request_id=parser_request_id, input_data=input_data
+                parser_request_id=parser_request_id,
+                input_data=SimpleVkInputData(**input_data),
             )
         except Exception as e:  # noqa: BLE001
             await self.parser_request_storage.save_error(

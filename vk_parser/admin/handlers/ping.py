@@ -4,7 +4,7 @@ from http import HTTPStatus
 from aiohttp.web import Response, View
 from aiomisc import timeout
 
-from vk_parser.handlers.base import DependenciesMixin
+from vk_parser.admin.handlers.base import DependenciesMixin
 from vk_parser.utils.http import fast_json_response
 
 log = logging.getLogger(__name__)

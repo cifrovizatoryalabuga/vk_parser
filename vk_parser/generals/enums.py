@@ -19,6 +19,5 @@ class RequestStatus(StrEnum):
     QUEUED = "QUEUED"
     PROCESSING = "PROCESSING"
     FAILED = "FAILED"
-    CANCELLED = "CANCELLED"
     EMPTY = "EMPTY"
     SUCCESSFUL = "SUCCESSFUL"

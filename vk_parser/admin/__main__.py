@@ -5,7 +5,7 @@ from aiomisc_log import basic_config
 
 from vk_parser.admin.arguments import parser
 from vk_parser.admin.deps import config_deps
-from vk_parser.services.rest import REST
+from vk_parser.admin.service import Admin
 
 log = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ def main() -> None:
     config_deps(args)
 
     services: list[Service] = [
-        REST(
+        Admin(
             address=args.api_address,
             port=args.api_port,
         ),

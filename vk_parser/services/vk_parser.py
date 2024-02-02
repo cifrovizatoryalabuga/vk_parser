@@ -12,10 +12,10 @@ log = logging.getLogger(__name__)
 class VKParserService(Service):
     __required__ = ("parsing_queue_name",)
     __dependencies__ = (
-        "amqp_parsing_channel",
         "parser_request_storage",
         "post_vk_parser",
         "simple_vk_parser",
+        "amqp_master",
     )
 
     parsing_queue_name: ParserTypes

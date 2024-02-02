@@ -1,0 +1,89 @@
+{% extends "./base.html.j2" %}
+{% import "./macros/utils.html.j2" as utils%}
+{% block title %}Информация о парсинге{% endblock title%}
+
+{% block content %}
+
+<div class="container">
+  <div class="section">
+    <div class="row">
+      {% if error %}
+      <div class="col s12 m6">
+              <div class="card red accent-2">
+        <div class="card-content white-text">
+          <span class="card-title">Ошибка!</span>
+          <p>Проверьте правильность заполнения формы</p>
+        </div>
+        </div>
+      </div>
+      {% endif %}
+      <form class="col s12" method="post">
+
+        <div class="row">
+            <div class="input-field col s12">
+                <select name="parser_type">
+                <option value="" disabled selected>Choose your option</option>
+                {% for parser_type in ParserTypes %}
+                    <option value="{{ parser_type }}">{{parser_type}}</option>
+                {% endfor %}
+                </select>
+                <label>Тип парсинга</label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input-field col s6">
+                <i class="material-icons prefix">link</i>
+                <input name="group_url" id="group_url" type="text" class="validate">
+                <label for="group_url">Ссылка на группу ВК</label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input-field col s6">
+                <i class="material-icons prefix">face</i>
+                <input name="max_age" id="max_age" type="number" class="validate">
+                <label for="max_age">Максимальный возраст пользователя</label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input-field col s6">
+                <i class="material-icons prefix">calendar_month</i>
+                <input name="posted_up_to" id="posted_up_to" type="text" class="validate" placeholder="Формат: дд.мм.гггг">
+                <label for="icon_prefix">Дата последнего поста</label>
+            </div>
+        </div>
+
+
+        </div>
+
+        <button class="btn blue waves-effect waves-light" type="submit">Создать парсинг
+            <i class="material-icons right">send</i>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('select');
+    var instances = M.FormSelect.init(elems, {});
+  });
+
+  // Or with jQuery
+
+  $(document).ready(function(){
+    $('select').formSelect();
+  });
+
+</script>
+
+{% endblock %}

@@ -12,6 +12,7 @@ from vk_parser.db.models.vk_group_post import VkGroupPost as VkGroupPostDb
 from vk_parser.db.models.vk_group_user import VkGroupUser as VkGroupUserDb
 from vk_parser.db.utils import inject_session
 from vk_parser.generals.models.vk_group import VkGroup
+from vk_parser.generals.models.vk_group_user import VkGroupUser
 
 
 @dataclass(frozen=True, slots=True)
@@ -118,6 +119,21 @@ class VkStorage:
         )
         await session.execute(query)
         await session.commit()
+
+    @inject_session
+    async def get_users_by_parser_request_id(
+        self,
+        session: AsyncSession,
+        parser_request_id: int,
+    ) -> Sequence[VkGroupUser]:
+        query = (
+            select(VkGroupUserDb)
+            .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
+            .where(VkGroupDb.parser_request_id == parser_request_id)
+            .order_by(VkGroupUserDb.created_at)
+        )
+        res = await session.scalars(query)
+        return [VkGroupUser.model_validate(r) for r in res]
 
 
 NType = TypeVar("NType", bound=Any)
