@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 
 from vk_parser.generals.enums import ParserTypes, RequestStatus
 
@@ -22,6 +22,14 @@ class ParsePostsVkInputData(BaseModel):
     group_url: HttpUrl
     posted_up_to: datetime
     max_age: int
+
+    @field_validator("posted_up_to", mode="before")
+    @classmethod
+    def validate_posted_up_to(cls, v: Any) -> Any:
+        try:
+            return datetime.strptime(str(v), "%d.%m.%Y")
+        except ValueError:
+            return v
 
 
 class UserStat(BaseModel):
