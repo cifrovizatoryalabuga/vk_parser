@@ -10,11 +10,6 @@ services:
       POSTGRES_DB: $POSTGRES_DB
     ports:
       - 5432:5432
-    healthcheck:
-      test: [CMD-SHELL, pg_isready]
-      interval: 1s
-      timeout: 5s
-      retries: 10
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -27,7 +22,11 @@ services:
       - 8001:15672
 
   admin:
+    depends_on:
+      - db
+      - rabbitmq
     image: andytakker/vk-parser:latest
+    restart: unless-stopped
     entrypoint: python -m vk_parser.admin
     ports:
       - 8000:80
@@ -43,6 +42,10 @@ services:
       APP_AMQP_RETRY_COUNT_LIMIT: $AMQP_RETRY_COUNT_LIMIT
 
   simple_vk_parser:
+    depends_on:
+      - db
+      - rabbitmq
+    restart: unless-stopped
     image: andytakker/vk-parser:latest
     entrypoint: python -m vk_parser.parsers.vk --amqp-queue-name=VK_SIMPLE_DOWNLOAD
     environment:
@@ -57,7 +60,11 @@ services:
       APP_AMQP_RETRY_COUNT_LIMIT: $AMQP_RETRY_COUNT_LIMIT
 
   post_vk_parser:
-    image: andytakker/vk-parser:latest
+    depends_on:
+      - db
+      - rabbitmq
+    restart: unless-stopped
+    image: andytakker/vk-parser:latest 
     entrypoint: python -m vk_parser.parsers.vk --amqp-queue-name=VK_DOWNLOAD_AND_PARSED_POSTS
     environment:
       APP_VK_API_SECURE_KEY: $VK_API_SECURE_KEY
