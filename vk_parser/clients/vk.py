@@ -135,6 +135,9 @@ async def parse_vk_group(response: ClientResponse) -> VkGroup | None:
         groups = VkGroups(**data["response"])
     except ValidationError:
         return None
+    except KeyError:
+        log.warning("Got key error with data %s", data)
+        raise
     return groups.groups[0]
 
 
@@ -144,6 +147,9 @@ async def parse_group_members(response: ClientResponse) -> VkGroupMembers | None
         group_members = VkGroupMembers(**data["response"])
     except ValidationError:
         return None
+    except KeyError:
+        log.warning("Got key error with data %s", data)
+        raise
     return group_members
 
 
@@ -158,7 +164,10 @@ async def parse_resolve_screen_name(resp: ClientResponse) -> VkResolvedObject | 
     data = await resp.json()
     try:
         resolved_object = VkResolvedObject(**data["response"])
-    except (ValidationError, KeyError):
+    except ValidationError:
+        return None
+    except KeyError:
+        log.warning("Got key error with data %s", data)
         return None
     return resolved_object
 

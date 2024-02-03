@@ -52,7 +52,7 @@ class PostVkParser:
                 finished_at=datetime.now(),
                 error_message=str(e),
             )
-            log.warning("Error processing with data: %s", input_data)
+            log.warning("Error processing with data: %s", input_data, exc_info=True)
 
     async def _process(
         self,
