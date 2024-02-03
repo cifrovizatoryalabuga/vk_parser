@@ -15,7 +15,4 @@ class VkGroupPost(BaseModel):
     posted_at: datetime
     text: str
     user_vk_ids: Sequence[int]
-
-    @property
-    def url(self) -> str:
-        return f"https://vk.com/wall-{self.vk_group_id}_{self.vk_post_id}"
+    url: str

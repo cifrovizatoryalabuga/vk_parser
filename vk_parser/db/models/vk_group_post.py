@@ -31,3 +31,4 @@ class VkGroupPost(TimestampMixin, Base):
         nullable=False,
         server_default="{ }",
     )
+    url: Mapped[str] = mapped_column(String(512), nullable=False)

@@ -56,6 +56,7 @@ class VkStorage:
                 "posted_at": post.date_without_tz,
                 "text": post.text,
                 "user_vk_ids": post.user_vk_ids,
+                "url": post.url,
             }
             for post in posts
         ]

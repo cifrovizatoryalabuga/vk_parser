@@ -95,6 +95,10 @@ class VkWallPost(BaseModel):
     def date_without_tz(self) -> datetime:
         return self.date.replace(tzinfo=None)
 
+    @property
+    def url(self) -> str:
+        return "https://vk.com/wall-{self.owner_id}_{id}"
+
 
 class VkWallPosts(BaseModel):
     count: int

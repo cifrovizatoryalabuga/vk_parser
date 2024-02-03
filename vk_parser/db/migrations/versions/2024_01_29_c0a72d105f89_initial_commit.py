@@ -81,6 +81,7 @@ def upgrade() -> None:
         sa.Column("vk_group_id", sa.BigInteger(), nullable=False),
         sa.Column("posted_at", sa.DateTime(), nullable=False),
         sa.Column("text", sa.String(), nullable=False),
+        sa.Column("url", sa.String(512), nullable=False),
         sa.Column(
             "user_vk_ids",
             postgresql.ARRAY(sa.BigInteger(), as_tuple=True),
