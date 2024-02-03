@@ -49,7 +49,7 @@
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format }}{% endif %}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
               <td>
-              {% for post in user_data.posts %}
+              {% for post in item.posts %}
               <a target="_blank" rel="noopener noreferrer" href="{{ post.url }}">{{ post.text }}</a>
               {% endfor %}
               </td>

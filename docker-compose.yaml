@@ -10,6 +10,8 @@ services:
       POSTGRES_DB: $POSTGRES_DB
     ports:
       - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -76,3 +78,8 @@ services:
       APP_AMQP_PREFETCH_COUNT: $AMQP_PREFETCH_COUNT
       APP_AMQP_RETRY_PAUSE_SECONDS: $AMQP_RETRY_PAUSE_SECONDS
       APP_AMQP_RETRY_COUNT_LIMIT: $AMQP_RETRY_COUNT_LIMIT
+
+
+volumes:
+  postgres_data:
+    driver: local
