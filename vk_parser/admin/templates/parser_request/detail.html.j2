@@ -51,7 +51,7 @@
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
               <td>
               {% for post in item.posts %}
-              <a class="posts" target="_blank" rel="noopener noreferrer" href="{{ post.url }}">{{ post.text }}</a><br>
+              <a class="posts" target="_blank" rel="noopener noreferrer" href="{{ post.url }}">{{ post.text }}</a><br><br>
               {% endfor %}
               </td>
             </tr>
