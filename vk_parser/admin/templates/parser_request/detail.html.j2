@@ -37,6 +37,7 @@
                 <th>Имя</th>
                 <th>Дата рождения</th>
                 <th>Последний вход в ВК</th>
+                <th>Посты</th>
             </tr>
           </thead>
 
@@ -50,7 +51,7 @@
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
               <td>
               {% for post in item.posts %}
-              <a target="_blank" rel="noopener noreferrer" href="{{ post.url }}">{{ post.text }}</a>
+              <a class="posts" target="_blank" rel="noopener noreferrer" href="{{ post.url }}">{{ post.text }}</a><br>
               {% endfor %}
               </td>
             </tr>
