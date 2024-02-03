@@ -97,7 +97,7 @@ class VkWallPost(BaseModel):
 
     @property
     def url(self) -> str:
-        return "https://vk.com/wall-{self.owner_id}_{id}"
+        return f"https://vk.com/wall{self.owner_id}_{self.id}"
 
 
 class VkWallPosts(BaseModel):
