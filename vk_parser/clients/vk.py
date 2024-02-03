@@ -137,7 +137,7 @@ async def parse_vk_group(response: ClientResponse) -> VkGroup | None:
         return None
     except KeyError:
         log.warning("Got key error with data %s", data)
-        raise
+        return None
     return groups.groups[0]
 
 
@@ -149,7 +149,7 @@ async def parse_group_members(response: ClientResponse) -> VkGroupMembers | None
         return None
     except KeyError:
         log.warning("Got key error with data %s", data)
-        raise
+        return None
     return group_members
 
 
