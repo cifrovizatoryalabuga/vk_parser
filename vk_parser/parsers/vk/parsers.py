@@ -96,7 +96,7 @@ class PostVkParser:
         users_in_posts = map_users_in_posts(posts)
         await self.vk_storage.remove_users_except(
             ids=users_in_posts.keys(),
-            vk_group_id=vk_group.id,
+            group_id=vk_group.id,
         )
         user_ids = await self.vk_storage.get_group_user_ids(group_id=vk_group.id)
         if not user_ids:
@@ -108,7 +108,7 @@ class PostVkParser:
             return
         await self.vk_storage.remove_posts_without_user_ids(
             ids=user_ids,
-            vk_group_id=vk_group.id,
+            group_id=vk_group.id,
         )
 
         result_data = await self._calculate_result(user_ids, users_in_posts)

@@ -91,12 +91,12 @@ class VkStorage:
         self,
         session: AsyncSession,
         ids: Iterable[int],
-        vk_group_id: int,
+        group_id: int,
     ) -> None:
         query = delete(VkGroupUserDb).where(
             and_(
                 VkGroupUserDb.vk_user_id.not_in(ids),
-                VkGroupUserDb.vk_group_id == vk_group_id,
+                VkGroupUserDb.vk_group_id == group_id,
             )
         )
         await session.execute(query)
@@ -119,13 +119,13 @@ class VkStorage:
         self,
         session: AsyncSession,
         ids: Iterable[int],
-        vk_group_id: int,
+        group_id: int,
     ) -> None:
         bigint_arr = cast(postgresql.array(ids), postgresql.ARRAY(postgresql.BIGINT))
         query = delete(VkGroupPostDb).where(
             and_(
                 not_(VkGroupPostDb.user_vk_ids.overlap(bigint_arr)),
-                VkGroupUserDb.vk_group_id == vk_group_id,
+                VkGroupPostDb.vk_group_id == group_id,
             ),
         )
         await session.execute(query)
