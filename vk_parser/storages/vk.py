@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any, TypeVar
 
 import sqlalchemy.dialects.postgresql as postgresql
-from sqlalchemy import cast, delete, insert, not_, select
+from sqlalchemy import and_, cast, delete, insert, not_, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from vk_parser.clients.vk import VkGroupMember, VkWallPost
@@ -91,9 +91,13 @@ class VkStorage:
         self,
         session: AsyncSession,
         ids: Iterable[int],
+        vk_group_id: int,
     ) -> None:
         query = delete(VkGroupUserDb).where(
-            VkGroupUserDb.vk_user_id.not_in(ids),
+            and_(
+                VkGroupUserDb.vk_user_id.not_in(ids),
+                VkGroupUserDb.vk_group_id == vk_group_id,
+            )
         )
         await session.execute(query)
         await session.commit()
@@ -115,10 +119,14 @@ class VkStorage:
         self,
         session: AsyncSession,
         ids: Iterable[int],
+        vk_group_id: int,
     ) -> None:
         bigint_arr = cast(postgresql.array(ids), postgresql.ARRAY(postgresql.BIGINT))
         query = delete(VkGroupPostDb).where(
-            not_(VkGroupPostDb.user_vk_ids.overlap(bigint_arr)),
+            and_(
+                not_(VkGroupPostDb.user_vk_ids.overlap(bigint_arr)),
+                VkGroupUserDb.vk_group_id == vk_group_id,
+            ),
         )
         await session.execute(query)
         await session.commit()

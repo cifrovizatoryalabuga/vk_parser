@@ -23,7 +23,7 @@ parser.add_argument(
 group = parser.add_argument_group("Logging options")
 group.add_argument(
     "--log-level",
-    default=LogLevel.debug,
+    default=LogLevel.info,
     choices=LogLevel.choices(),
 )
 group.add_argument(

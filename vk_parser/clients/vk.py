@@ -7,7 +7,7 @@ from types import MappingProxyType
 from typing import ClassVar
 
 from aiohttp import ClientResponse, ClientSession, hdrs
-from aiomisc import asyncbackoff
+from aiomisc import asyncretry
 from pydantic import BaseModel, Field, ValidationError
 from yarl import URL
 
@@ -222,13 +222,14 @@ class Vk(BaseHttpClient):
             "v": vk_api_version,
         }
 
-    @asyncbackoff(12, pause=1, max_tries=8, deadline=None, exceptions=(Exception,))
+    @asyncretry(max_tries=8, pause=1)
     async def get_group_by_id(
         self,
         group_id: int,
         fields: Sequence[str] = DEFAULT_FIELDS_GROUPS_GET_BY_ID,
         timeout: TimeoutType = DEFAULT_TIMEOUT,
     ) -> VkGroup | None:
+        log.info("Request VK API method: groups.getById %s", group_id)
         return await self._make_req(
             method=hdrs.METH_POST,
             url=self._url / "method/groups.getById",
@@ -241,15 +242,21 @@ class Vk(BaseHttpClient):
             },
         )
 
-    @asyncbackoff(12, pause=1, max_tries=8, deadline=None, exceptions=(Exception,))
+    @asyncretry(max_tries=8, pause=1)
     async def get_group_members(
         self,
         group_id: int,
-        offset: int = 0,
         fields: Sequence[str] = DEFAULT_FIELDS_GROUPS_GET_MEMBERS,
+        offset: int = 0,
         count: int = 1000,
         timeout: TimeoutType = DEFAULT_TIMEOUT,
     ) -> VkGroupMembers | None:
+        log.info(
+            "Request VK API method: groups.getMembers %s %s %s",
+            group_id,
+            offset,
+            count,
+        )
         return await self._make_req(
             method=hdrs.METH_POST,
             url=self._url / "method/groups.getMembers",
@@ -264,7 +271,7 @@ class Vk(BaseHttpClient):
             },
         )
 
-    @asyncbackoff(12, pause=1, max_tries=8, deadline=None, exceptions=(Exception,))
+    @asyncretry(max_tries=12, pause=1)
     async def get_group_posts(
         self,
         group_id: int,
@@ -272,6 +279,7 @@ class Vk(BaseHttpClient):
         count: int = 100,
         timeout: TimeoutType = DEFAULT_TIMEOUT,
     ) -> VkWallPosts | None:
+        log.info("Request VK API method: wall.get %s %s %s", group_id, offset, count)
         return await self._make_req(
             method=hdrs.METH_POST,
             url=self._url / "method/wall.get",
@@ -285,7 +293,9 @@ class Vk(BaseHttpClient):
             },
         )
 
+    @asyncretry(max_tries=12, pause=1)
     async def ping(self, timeout: TimeoutType = DEFAULT_TIMEOUT) -> bool:
+        log.info("Request VK API method: users.get")
         return await self._make_req(
             method=hdrs.METH_POST,
             url=self._url / "method/users.get",
@@ -297,6 +307,7 @@ class Vk(BaseHttpClient):
             },
         )
 
+    @asyncretry(max_tries=8, pause=1)
     async def resolve_screen_name(
         self,
         screen_name: str,

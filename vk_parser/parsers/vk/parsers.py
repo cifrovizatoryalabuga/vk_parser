@@ -42,10 +42,12 @@ class PostVkParser:
             status=RequestStatus.PROCESSING,
         )
         try:
+            log.info("Start process request %d", parser_request_id)
             await self._process(
                 parser_request_id=parser_request_id,
                 input_data=ParsePostsVkInputData(**input_data),
             )
+            log.info("Finished process request %d", parser_request_id)
         except Exception as e:  # noqa: BLE001
             await self.parser_request_storage.save_error(
                 id_=parser_request_id,
@@ -92,7 +94,10 @@ class PostVkParser:
             len(users),
         )
         users_in_posts = map_users_in_posts(posts)
-        await self.vk_storage.remove_users_except(ids=users_in_posts.keys())
+        await self.vk_storage.remove_users_except(
+            ids=users_in_posts.keys(),
+            vk_group_id=vk_group.id,
+        )
         user_ids = await self.vk_storage.get_group_user_ids(group_id=vk_group.id)
         if not user_ids:
             await self.parser_request_storage.save_empty_result(
@@ -101,7 +106,10 @@ class PostVkParser:
                 message="Empty intersection users and posts",
             )
             return
-        await self.vk_storage.remove_posts_without_user_ids(ids=user_ids)
+        await self.vk_storage.remove_posts_without_user_ids(
+            ids=user_ids,
+            vk_group_id=vk_group.id,
+        )
 
         result_data = await self._calculate_result(user_ids, users_in_posts)
         await self.parser_request_storage.save_successful_result(
@@ -135,7 +143,7 @@ class PostVkParser:
                 group_id=vk_group.vk_id,
                 offset=offset,
             )
-            if not chunk_posts:
+            if not chunk_posts or not chunk_posts.items:
                 do_next = False
                 break
             for post in chunk_posts.items:
@@ -202,6 +210,7 @@ class SimpleVkParser:
     async def process_request(
         self, parser_request_id: int, input_data: dict[str, Any]
     ) -> None:
+        log.info("Start process request %d", parser_request_id)
         await self.parser_request_storage.update_status(
             id_=parser_request_id,
             status=RequestStatus.PROCESSING,
