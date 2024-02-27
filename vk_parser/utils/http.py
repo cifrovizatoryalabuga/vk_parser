@@ -1,14 +1,9 @@
 from functools import partial
-from typing import Any
 
-import orjson
 from aiohttp import ClientSession
 from aiohttp.web_response import json_response
 
-
-def dumps(*args: Any, **kwargs: Any) -> str:
-    return orjson.dumps(*args, **kwargs).decode()
-
+from vk_parser.utils.json import dumps
 
 fast_json_response = partial(json_response, dumps=dumps)
 

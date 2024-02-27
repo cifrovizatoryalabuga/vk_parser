@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from vk_parser.clients.vk import VK_API_BASE_URL, Vk
 from vk_parser.db.utils import create_async_engine, create_async_session_factory
-from vk_parser.parsers.vk.parsers import PostVkParser, SimpleVkParser
+from vk_parser.parsers.vk import PostVkParser, SimpleVkParser
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.vk import VkStorage
 from vk_parser.utils.http import create_web_session
@@ -63,13 +63,11 @@ def config_deps(args: Namespace) -> None:
         vk_client: Vk,
         vk_storage: VkStorage,
         parser_request_storage: ParserRequestStorage,
-        session_factory: async_sessionmaker[AsyncSession],
     ) -> PostVkParser:
         return PostVkParser(
             vk_client=vk_client,
             vk_storage=vk_storage,
             parser_request_storage=parser_request_storage,
-            session_factory=session_factory,
         )
 
     @dependency
@@ -77,13 +75,11 @@ def config_deps(args: Namespace) -> None:
         vk_client: Vk,
         vk_storage: VkStorage,
         parser_request_storage: ParserRequestStorage,
-        session_factory: async_sessionmaker[AsyncSession],
     ) -> SimpleVkParser:
         return SimpleVkParser(
             vk_client=vk_client,
             vk_storage=vk_storage,
             parser_request_storage=parser_request_storage,
-            session_factory=session_factory,
         )
 
     @dependency

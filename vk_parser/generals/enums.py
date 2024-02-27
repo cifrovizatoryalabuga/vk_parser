@@ -21,3 +21,10 @@ class RequestStatus(StrEnum):
     FAILED = "FAILED"
     EMPTY = "EMPTY"
     SUCCESSFUL = "SUCCESSFUL"
+
+
+@unique
+class RequestMessage(StrEnum):
+    EMPTY_USERS = "Empty users"
+    EMPTY_POSTS = "Posts with users not found"
+    EMPTY_INTERSECTION = "Empty intersection users and posts"

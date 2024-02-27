@@ -16,7 +16,7 @@ from vk_parser.generals.models.pagination import PaginationResponse
 from vk_parser.generals.models.parser_request import (
     DetailParserRequest,
     ParserRequest,
-    ResultData,
+    Result,
 )
 from vk_parser.storages.base import PaginationMixin
 
@@ -104,7 +104,7 @@ class ParserRequestStorage(PaginationMixin):
             await session.commit()
             return DetailParserRequest.model_validate(result.one())
         except DBAPIError as e:
-            log.warning("Error updating error: %s", e)
+            log.warning("Error updating: %s", e)
 
         return None
 
@@ -162,7 +162,7 @@ class ParserRequestStorage(PaginationMixin):
         self,
         session: AsyncSession,
         id_: int,
-        result_data: ResultData,
+        result: Result,
         finished_at: datetime,
     ) -> None:
         query = (
@@ -171,7 +171,7 @@ class ParserRequestStorage(PaginationMixin):
             .values(
                 finished_at=finished_at,
                 status=RequestStatus.SUCCESSFUL,
-                result_data=result_data.model_dump(),
+                result_data=result.model_dump(),
             )
         )
         try:

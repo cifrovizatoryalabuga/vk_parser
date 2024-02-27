@@ -8,8 +8,8 @@ from aiohttp.web_exceptions import HTTPInternalServerError
 from vk_parser.admin.handlers.base import CreateMixin, DependenciesMixin
 from vk_parser.generals.enums import ParserTypes, RequestStatus
 from vk_parser.generals.models.parser_request import (
-    ParsePostsVkInputData,
-    SimpleVkInputData,
+    ParsePostsVkForm,
+    SimpleVkForm,
 )
 
 
@@ -22,9 +22,7 @@ class ParserRequestCreateTemplateHandler(web.View, DependenciesMixin, CreateMixi
 
     @aiohttp_jinja2.template("./parser_request/create.html.j2")
     async def post(self) -> Mapping[str, Any]:
-        input_data = await self.parse_form(
-            schemas=[ParsePostsVkInputData, SimpleVkInputData]
-        )
+        input_data = await self.parse_form(schemas=[ParsePostsVkForm, SimpleVkForm])
         if input_data is None:
             return {
                 "error": True,

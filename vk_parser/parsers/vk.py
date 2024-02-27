@@ -7,84 +7,57 @@ from datetime import datetime
 from typing import Any
 
 from pydantic import HttpUrl
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from vk_parser.clients.vk import Vk, VkGroupMember, VkObjectType, VkWallPost
-from vk_parser.generals.enums import RequestStatus
+from vk_parser.generals.enums import RequestMessage
 from vk_parser.generals.models.parser_request import (
-    ParsePostsVkInputData,
-    ResultData,
-    SimpleVkInputData,
+    ParsePostsVkForm,
+    Result,
+    SimpleVkForm,
     UserStat,
 )
 from vk_parser.generals.models.vk_group import VkGroup
+from vk_parser.parsers.base import BaseParser
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.vk import VkStorage
-from vk_parser.utils.parse import search_user_vk_ids
+from vk_parser.utils.parsers import map_users_in_posts, search_user_vk_ids
 
 log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
-class PostVkParser:
+class PostVkParser(BaseParser):
     vk_client: Vk
     vk_storage: VkStorage
     parser_request_storage: ParserRequestStorage
-    session_factory: async_sessionmaker[AsyncSession]
-
-    async def process_request(
-        self,
-        parser_request_id: int,
-        input_data: dict[str, Any],
-    ) -> None:
-        await self.parser_request_storage.update_status(
-            id_=parser_request_id,
-            status=RequestStatus.PROCESSING,
-        )
-        try:
-            log.info("Start process request %d", parser_request_id)
-            await self._process(
-                parser_request_id=parser_request_id,
-                input_data=ParsePostsVkInputData(**input_data),
-            )
-            log.info("Finished process request %d", parser_request_id)
-        except Exception as e:  # noqa: BLE001
-            await self.parser_request_storage.save_error(
-                id_=parser_request_id,
-                finished_at=datetime.now(),
-                error_message=str(e),
-            )
-            log.warning("Error processing with data: %s", input_data, exc_info=True)
 
     async def _process(
-        self,
-        parser_request_id: int,
-        input_data: ParsePostsVkInputData,
+        self, parser_request_id: int, input_data: dict[str, Any]
     ) -> None:
-        vk_group_id = await self._get_group_id(url=input_data.group_url)
+        data = ParsePostsVkForm(**input_data)
+        vk_group_id = await self._get_group_id(url=data.group_url)
         vk_group = await self.vk_storage.create_group(
             parser_request_id=parser_request_id,
             vk_id=vk_group_id,
-            url=str(input_data.group_url),
+            url=str(data.group_url),
         )
         tasks = gather(
             self._download_posts(
                 vk_group=vk_group,
-                posted_up_to=input_data.posted_up_to,
+                posted_up_to=data.posted_up_to,
             ),
             self._download_users(
                 vk_group=vk_group,
-                max_age=input_data.max_age,
+                max_age=data.max_age,
             ),
         )
         posts, users = await tasks
         if not posts or not users:
-            await self.parser_request_storage.save_empty_result(
-                id_=parser_request_id,
-                finished_at=datetime.now(),
-                message="Empty group users"
+            await self._save_empty_result(
+                parser_request_id=parser_request_id,
+                message=RequestMessage.EMPTY_USERS
                 if not users
-                else "Posts with users not found",
+                else RequestMessage.EMPTY_POSTS,
             )
             return
         log.info(
@@ -100,10 +73,9 @@ class PostVkParser:
         )
         user_ids = await self.vk_storage.get_group_user_ids(group_id=vk_group.id)
         if not user_ids:
-            await self.parser_request_storage.save_empty_result(
-                id_=parser_request_id,
-                finished_at=datetime.now(),
-                message="Empty intersection users and posts",
+            await self._save_empty_result(
+                parser_request_id=parser_request_id,
+                message=RequestMessage.EMPTY_INTERSECTION,
             )
             return
         await self.vk_storage.remove_posts_without_user_ids(
@@ -111,18 +83,16 @@ class PostVkParser:
             group_id=vk_group.id,
         )
 
-        result_data = await self._calculate_result(user_ids, users_in_posts)
-        await self.parser_request_storage.save_successful_result(
-            id_=parser_request_id,
-            result_data=result_data,
-            finished_at=datetime.now(),
+        result = await self._calculate_result(user_ids, users_in_posts)
+        await self._save_successful_result(
+            parser_request_id=parser_request_id,
+            result=result,
         )
 
     async def _get_group_id(self, url: HttpUrl) -> int:
-        path = url.path
-        if path is None:
+        if url.path is None:
             raise ValueError("Can't parse group ID")
-        resolved_object = await self.vk_client.resolve_screen_name(path[1:])
+        resolved_object = await self.vk_client.resolve_screen_name(url.path[1:])
         if not resolved_object:
             log.info("Got resolved object: %s", resolved_object)
             raise ValueError("Can't parse group ID")
@@ -191,55 +161,34 @@ class PostVkParser:
 
     async def _calculate_result(
         self, user_ids: Sequence[int], users_in_posts: Mapping[int, int]
-    ) -> ResultData:
+    ) -> Result:
         user_ids_set = set(user_ids)
         user_stat = []
         for id_ in users_in_posts:
             if id_ in user_ids_set:
                 user_stat.append(UserStat(vk_id=id_, count=users_in_posts[id_]))
-        return ResultData(message="Successful finished", user_stat=user_stat)
+        return Result(message="Successful finished", user_stat=user_stat)
 
 
 @dataclass(frozen=True, slots=True)
-class SimpleVkParser:
+class SimpleVkParser(BaseParser):
     vk_client: Vk
     vk_storage: VkStorage
     parser_request_storage: ParserRequestStorage
-    session_factory: async_sessionmaker[AsyncSession]
-
-    async def process_request(
-        self, parser_request_id: int, input_data: dict[str, Any]
-    ) -> None:
-        log.info("Start process request %d", parser_request_id)
-        await self.parser_request_storage.update_status(
-            id_=parser_request_id,
-            status=RequestStatus.PROCESSING,
-        )
-        try:
-            await self._process(
-                parser_request_id=parser_request_id,
-                input_data=SimpleVkInputData(**input_data),
-            )
-        except Exception as e:  # noqa: BLE001
-            await self.parser_request_storage.save_error(
-                id_=parser_request_id,
-                finished_at=datetime.now(),
-                error_message=str(e),
-            )
-            log.warning("Error processing with data: %s", input_data)
 
     async def _process(
-        self, parser_request_id: int, input_data: SimpleVkInputData
+        self, parser_request_id: int, input_data: dict[str, Any]
     ) -> None:
-        vk_group_id = await self._get_group_id(url=input_data.group_url)
+        data = SimpleVkForm(**input_data)
+        vk_group_id = await self._get_group_id(url=data.group_url)
         vk_group = await self.vk_storage.create_group(
             parser_request_id=parser_request_id,
             vk_id=vk_group_id,
-            url=str(input_data.group_url),
+            url=str(data.group_url),
         )
         users = await self._download_users(
             vk_group=vk_group,
-            max_age=input_data.max_age,
+            max_age=data.max_age,
         )
 
         if not users:
@@ -259,7 +208,7 @@ class SimpleVkParser:
 
         await self.parser_request_storage.save_successful_result(
             id_=parser_request_id,
-            result_data=ResultData(message="Successful finished", user_stat=[]),
+            result=Result(message="Successful finished", user_stat=[]),
             finished_at=datetime.now(),
         )
 
@@ -302,11 +251,3 @@ class SimpleVkParser:
         if users:
             await self.vk_storage.create_users(users, vk_group.id)
         return users
-
-
-def map_users_in_posts(posts: Sequence[VkWallPost]) -> Mapping[int, int]:
-    users_in_posts: dict[int, int] = {}
-    for post in posts:
-        for user_vk_id in post.user_vk_ids:
-            users_in_posts[user_vk_id] = users_in_posts.get(user_vk_id, 0) + 1
-    return users_in_posts

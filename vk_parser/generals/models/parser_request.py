@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 from vk_parser.generals.enums import ParserTypes, RequestStatus
 
 
-class SimpleVkInputData(BaseModel):
+class SimpleVkForm(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     parser_type: Literal[ParserTypes.VK_SIMPLE_DOWNLOAD]
@@ -15,7 +15,7 @@ class SimpleVkInputData(BaseModel):
     max_age: int
 
 
-class ParsePostsVkInputData(BaseModel):
+class ParsePostsVkForm(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     parser_type: Literal[ParserTypes.VK_DOWNLOAD_AND_PARSED_POSTS]
@@ -37,7 +37,7 @@ class UserStat(BaseModel):
     count: int
 
 
-class ResultData(BaseModel):
+class Result(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     message: str
@@ -51,11 +51,11 @@ class DetailParserRequest(BaseModel):
     created_at: datetime
     updated_at: datetime
     status: RequestStatus
-    input_data: ParsePostsVkInputData | SimpleVkInputData = Field(
+    input_data: ParsePostsVkForm | SimpleVkForm = Field(
         ...,
         discriminator="parser_type",
     )
-    result_data: ResultData | None
+    result: Result | None
     finished_at: datetime | None
     error_message: str | None
 

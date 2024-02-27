@@ -1,23 +1,26 @@
 import logging
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from datetime import date, datetime
 from enum import IntEnum, StrEnum, unique
+from functools import wraps
 from http import HTTPStatus
 from types import MappingProxyType
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from aiohttp import ClientResponse, ClientSession, hdrs
-from aiomisc import asyncretry
+from aiomisc import asyncretry, timeout
 from pydantic import BaseModel, Field, ValidationError
 from yarl import URL
 
 from vk_parser.clients.base.client import BaseHttpClient
 from vk_parser.clients.base.root_handler import ResponseHandlersType
 from vk_parser.clients.base.timeout import TimeoutType
+from vk_parser.generals.exceptions import VkParserTooManyRequestsException
 
 log = logging.getLogger(__name__)
 
 VK_API_BASE_URL = URL("https://api.vk.com")
+ERROR_KEY = "error"
 
 
 class VkGroupWallType(IntEnum):
@@ -120,8 +123,20 @@ class VkResolvedObject(BaseModel):
     type: VkObjectType
 
 
-async def parse_wall_posts(response: ClientResponse) -> VkWallPosts | None:
-    data = await response.json()
+def parse_vk_response(func: Callable) -> Callable:
+    @wraps(func)
+    async def _parse(response: ClientResponse) -> Any:
+        data = await response.json()
+        if ERROR_KEY in data:
+            log.warning("VK parser too many requests")
+            raise VkParserTooManyRequestsException
+        return await func(data=data)
+
+    return _parse
+
+
+@parse_vk_response
+async def parse_wall_posts(data: dict[str, Any]) -> VkWallPosts | None:
     try:
         posts = VkWallPosts(**data["response"])
     except ValidationError:
@@ -129,8 +144,8 @@ async def parse_wall_posts(response: ClientResponse) -> VkWallPosts | None:
     return posts
 
 
-async def parse_vk_group(response: ClientResponse) -> VkGroup | None:
-    data = await response.json()
+@parse_vk_response
+async def parse_vk_group(data: dict[str, Any]) -> VkGroup | None:
     try:
         groups = VkGroups(**data["response"])
     except ValidationError:
@@ -141,8 +156,8 @@ async def parse_vk_group(response: ClientResponse) -> VkGroup | None:
     return groups.groups[0]
 
 
-async def parse_group_members(response: ClientResponse) -> VkGroupMembers | None:
-    data = await response.json()
+@parse_vk_response
+async def parse_group_members(data: dict[str, Any]) -> VkGroupMembers | None:
     try:
         group_members = VkGroupMembers(**data["response"])
     except ValidationError:
@@ -153,15 +168,8 @@ async def parse_group_members(response: ClientResponse) -> VkGroupMembers | None
     return group_members
 
 
-async def parse_ping(resp: ClientResponse) -> bool:
-    data = await resp.json()
-    if "error" in data:
-        return False
-    return True
-
-
-async def parse_resolve_screen_name(resp: ClientResponse) -> VkResolvedObject | None:
-    data = await resp.json()
+@parse_vk_response
+async def parse_resolve_screen_name(data: dict[str, Any]) -> VkResolvedObject | None:
     try:
         resolved_object = VkResolvedObject(**data["response"])
     except ValidationError:
@@ -170,6 +178,13 @@ async def parse_resolve_screen_name(resp: ClientResponse) -> VkResolvedObject | 
         log.warning("Got key error with data %s", data)
         return None
     return resolved_object
+
+
+async def parse_ping(resp: ClientResponse) -> bool:
+    data = await resp.json()
+    if "error" in data:
+        return False
+    return True
 
 
 class Vk(BaseHttpClient):
@@ -293,6 +308,7 @@ class Vk(BaseHttpClient):
             },
         )
 
+    @timeout(value=2)
     @asyncretry(max_tries=12, pause=1)
     async def ping(self, timeout: TimeoutType = DEFAULT_TIMEOUT) -> bool:
         log.info("Request VK API method: users.get")

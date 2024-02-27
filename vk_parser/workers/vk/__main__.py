@@ -4,9 +4,9 @@ from aiomisc import Service, entrypoint
 from aiomisc_log import basic_config
 
 from vk_parser.generals.enums import VK_PARSER_TYPES
-from vk_parser.parsers.vk.arguments import parser
-from vk_parser.parsers.vk.deps import config_deps
 from vk_parser.services.vk_parser import VKParserService
+from vk_parser.workers.vk.arguments import parser
+from vk_parser.workers.vk.deps import config_deps
 
 log = logging.getLogger(__name__)
 
