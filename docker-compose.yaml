@@ -49,7 +49,7 @@ services:
       - rabbitmq
     restart: unless-stopped
     image: andytakker/vk-parser:latest
-    entrypoint: python -m vk_parser.parsers.vk --amqp-queue-name=VK_SIMPLE_DOWNLOAD
+    entrypoint: python -m vk_parser.workers.vk --amqp-queue-name=VK_SIMPLE_DOWNLOAD
     environment:
       APP_VK_API_SECURE_KEY: $VK_API_SECURE_KEY
       APP_VK_API_SERVICE_TOKEN: $VK_API_SERVICE_TOKEN
@@ -67,7 +67,7 @@ services:
       - rabbitmq
     restart: unless-stopped
     image: andytakker/vk-parser:latest
-    entrypoint: python -m vk_parser.parsers.vk --amqp-queue-name=VK_DOWNLOAD_AND_PARSED_POSTS
+    entrypoint: python -m vk_parser.workers.vk --amqp-queue-name=VK_DOWNLOAD_AND_PARSED_POSTS
     environment:
       APP_VK_API_SECURE_KEY: $VK_API_SECURE_KEY
       APP_VK_API_SERVICE_TOKEN: $VK_API_SERVICE_TOKEN
