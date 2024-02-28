@@ -55,7 +55,7 @@ class DetailParserRequest(BaseModel):
         ...,
         discriminator="parser_type",
     )
-    result: Result | None
+    result_data: Result | None
     finished_at: datetime | None
     error_message: str | None
 
