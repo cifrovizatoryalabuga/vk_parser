@@ -1,0 +1,68 @@
+{% extends "./base.html.j2" %}
+{% import "./macros/utils.html.j2" as utils%}
+{% block title %}Статус отпрвки сообщений{% endblock title%}
+
+{% block content %}
+<div class="container">
+  <div class="section">
+    <div class="row">
+      <div class="col s12">
+        <h2 class="light-blue-text darken-3">Список статусов сообщений</h2>
+      </div>
+      <div class="col s12">
+        <p>Всего массовых рассылок : {{ pagination.meta.total }} </p>
+      </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col s12">
+            <table class="striped highlight">
+          <thead>
+            <tr>
+                <th>ID</th>
+                <th>Статус</th>
+                <th>Название группы</th>
+                <th>Кол-во отправленных сообщений</th>
+                <th>Создано</th>
+                <th>Завершено</th>
+                <th>Ошибка</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for item in pagination.items %}
+            <tr class="waves-efffect">
+              <td><a href="/admin/parsers/{{ item.id }}/">{{ item.id }}</a></td>
+              <td><a href="/admin/parsers/{{ item.id }}/">{{ item.id }}</a></td>
+              <td><a href="/admin/parsers/{{ item.id }}/">{{ utils.badge(item.status) }}</span></a></td>
+              <td><a href="/admin/parsers/{{ item.id }}/">{{ utils.badge(item.status) }}</span></a></td>
+              <td><a href="/admin/parsers/{{ item.id }}/">{{ item.created_at|datetime_format }}</a></td>
+              <td><a href="/admin/parsers/{{ item.id }}/">{% if item.finished_at %}{{ item.finished_at|datetime_format }}{% endif %}</a></td>
+              <td><a href="/admin/parsers/{{ item.id }}/">{% if item.error_message %}{{ item.error_message }}{% endif %}</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <ul class="pagination">
+          {% with page = pagination.meta.page, page_size = pagination.meta.page_size, pages = pagination.meta.pages %}
+          {% if page != 1 %}
+          <li class="waves-effect">
+            <a href="/admin/parsers/?page_size={{ page_size }}&page={{ page - 1 }}">
+            <i class="material-icons">chevron_left</i></a>
+            </li>
+          {%endif%}
+          <li class="active"><a href="#!">{{ page }}</a></li>
+          {% if page != pages%}
+          <li class="waves-effect">
+          <a href="/admin/parsers/?page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
+          </li>
+          {%endif%}
+          {%endwith%}
+        </ul>
+        </div>
+    </div>
+
+  </div>
+</div>
+{% endblock content %}

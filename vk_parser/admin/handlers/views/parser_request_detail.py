@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import date
@@ -62,6 +63,32 @@ class ParserRequestDetailTemplateHandler(web.View, DependenciesMixin):
             "parser_request": parser_request,
             "user_data": user_data,
         }
+
+    def _get_id(self) -> int:
+        try:
+            return int(self.request.match_info["id"])
+        except ValueError:
+            raise HTTPBadRequest(reason="Invalid ID value")
+        
+    @aiohttp_jinja2.template("./parser_request/detail.html.j2")
+    async def post(self) -> Mapping[str, Any]:
+        parser_request_id = self._get_id()
+        parser_request = await self.parser_request_storage.get_detail(
+            id_=parser_request_id,
+        )
+        if parser_request is None:
+            raise HTTPNotFound
+        if parser_request.parser_type == ParserTypes.VK_DOWNLOAD_AND_PARSED_POSTS:
+            users = await self.vk_storage.get_users_by_parser_request_id(
+                parser_request_id
+            )
+            for i in self.request:
+                print(i)
+            for user in users:
+                print(user.vk_user_id)
+
+        location = self.request.app.router["parser_request_send_messages_template"].url_for()
+        raise web.HTTPFound(location=location)
 
     def _get_id(self) -> int:
         try:

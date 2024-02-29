@@ -15,8 +15,12 @@ from aiomisc.service.aiohttp import AIOHTTPService
 from vk_parser.admin.handlers.parser_request_create import ParserRequestCreateHandler
 from vk_parser.admin.handlers.parser_request_detail import ParserRequestDetailHandler
 from vk_parser.admin.handlers.parser_request_list import ParserRequestListHandler
+from vk_parser.admin.handlers.parser_request_send_messages import ParserRequestListHandler
 from vk_parser.admin.handlers.ping import PingHandler
 from vk_parser.admin.handlers.views.index import IndexTemplateHandler
+from vk_parser.admin.handlers.views.parser_request_send_messages import (
+    ParserRequestListMessagesTemplateHandler,
+)
 from vk_parser.admin.handlers.views.parser_request_create import (
     ParserRequestCreateTemplateHandler,
 )
@@ -77,6 +81,12 @@ class Admin(AIOHTTPService):
             ParserRequestDetailHandler,
             "parser_request_detail",
         ),
+        (
+            hdrs.METH_GET,
+            "/api/v1/send_messages/",
+            ParserRequestListHandler,
+            "parser_request_send_messages",
+        ),
         (hdrs.METH_GET, "/", RedirectToAdminHandler, "redirect_to_admin"),
         (hdrs.METH_GET, "/admin/", IndexTemplateHandler, "admin"),
         (
@@ -104,10 +114,22 @@ class Admin(AIOHTTPService):
             "parser_request_detail_template",
         ),
         (
+            hdrs.METH_POST,
+            "/admin/parsers/{id}/",
+            ParserRequestDetailTemplateHandler,
+            "parser_request_detail_template",
+        ),
+        (
             hdrs.METH_GET,
             "/admin/parsers/{id}/users/",
             VkGroupUserDownloadCsvHandler,
             "parser_request_users_download",
+        ),
+        (
+            hdrs.METH_GET,
+            "/admin/send_messages/",
+            ParserRequestListMessagesTemplateHandler,
+            "parser_request_send_messages_template",
         ),
     )
 
