@@ -26,7 +26,7 @@
 
 
 # Запуск проекта для локальной разработки
-1. Клонируем git к себе на локальную машину. `git clone https://github.com/The-Galley/vk_parser`
+1. Клонируем git к себе на локальную машину. `git clone git@github.com:cifrovizatoryalabuga/vk_parser.git`
 2. Устанавливаем версию Python 3.11
 3. Открываем терминал и прописываем команды `make develop` после этого запускаем venv окружение командой source .venv/bin/activate.
 4. Затем создайте в проекте `.env` файл, и добавьте туда строки:
@@ -41,11 +41,7 @@ P.S. Данные для VK можно взять по ссылке `https://dev
 
 Всего нужно будет использовать 3-4 терминала по мере необходимости разработки определенных модулей, 2 обязательных и 2 для создания парсеров.
 
-5. Терминал 1 : Настройте импорт env через команду `set -a && source .env && set +a`.
-6. Терминал 1 : Запускаем команду `python -m vk_parser.db upgrade head`, для накатки миграций в бд.
-7. Терминал 2 : Настройте импорт env через команду `set -a && source .env && set +a`.
-8. Терминал 2 : Запускаем команду `make local`, для развертывания контейнеров БД и Рэбит.
-9. Терминал 1 : Запускаем команду `python -m vk_parser.admin`, для старта проекта.
-10. Терминал 3 : Настройте импорт env через команду `set -a && source .env && set +a`.
-11. Терминал 3 : Запускаем команду `python -m vk_parser.workers.vk --amqp-queue-name=VK_DOWNLOAD_AND_PARSED_POSTS`/`python -m vk_parser.workers.vk --amqp-queue-name=VK_SIMPLE_DOWNLOAD` для поднятия воркеров. (Нужны для создания парсеров и запуска их в работу) Соответственно по разным терминалам если хотите запустить оба.
-13. Переходите по ip, вносите изменения изучайте проект.![image](https://github.com/cifrovizatoryalabuga/vk_parser/assets/160467950/b9be79bb-f83b-47e0-bcf4-5aa021f7b7fa)
+5. Терминал 1 : Настройте импорт env через команду `set -a && source .env && set +a && make local` для развертывания контейнеров БД и Рэбит.
+6. Терминал 2 : Настройте импорт env через команду `set -a && source .env && set +a && python -m vk_parser.db upgrade head && python -m vk_parser.admin` для накатки миграций в бд и старта проекта.
+7. Терминал 3 : Настройте импорт env через команду `set -a && source .env && set +a && python -m vk_parser.workers.vk --amqp-queue-name=VK_DOWNLOAD_AND_PARSED_POSTS` для поднятия воркеров. PS для работы с VK_SIMPLE_DOWNLOAD используйте вместо этой команды `python -m vk_parser.workers.vk --amqp-queue-name=VK_SIMPLE_DOWNLOAD` или запустите её в другом терминале.
+8. Переходите по ip, вносите изменения изучайте проект.!
