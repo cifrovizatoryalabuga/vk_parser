@@ -26,6 +26,7 @@
 
 
 # Запуск проекта для локальной разработки
+Разработку необходимо производить с корпоративного аккаунта AlabugaCifrovizatory
 1. Клонируем git к себе на локальную машину. `git clone git@github.com:cifrovizatoryalabuga/vk_parser.git`
 2. Устанавливаем версию Python 3.11
 3. Открываем терминал и прописываем команды `make develop` после этого запускаем venv окружение командой source .venv/bin/activate.
