@@ -5,11 +5,13 @@ from enum import StrEnum, unique
 class ParserTypes(StrEnum):
     VK_DOWNLOAD_AND_PARSED_POSTS = "VK_DOWNLOAD_AND_PARSED_POSTS"
     VK_SIMPLE_DOWNLOAD = "VK_SIMPLE_DOWNLOAD"
+    VK_SEND_MESSAGES = "VK_SEND_MESSAGES"
 
 
 VK_PARSER_TYPES = (
     ParserTypes.VK_SIMPLE_DOWNLOAD,
     ParserTypes.VK_DOWNLOAD_AND_PARSED_POSTS,
+    ParserTypes.VK_SEND_MESSAGES,
 )
 
 

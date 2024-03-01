@@ -33,12 +33,12 @@
           <tbody>
             {% for item in pagination.items %}
             <tr class="waves-efffect">
-              <td><a href="/admin/parsers/{{ item.id }}/">{{ item.id }}</a></td>
-              <td><a href="/admin/parsers/{{ item.id }}/">{{ item.id }}</a></td>
-              <td><a href="/admin/parsers/{{ item.id }}/">{{ utils.badge(item.status) }}</span></a></td>
-              <td><a href="/admin/parsers/{{ item.id }}/">{{ utils.badge(item.status) }}</span></a></td>
-              <td><a href="/admin/parsers/{{ item.id }}/">{{ item.created_at|datetime_format }}</a></td>
-              <td><a href="/admin/parsers/{{ item.id }}/">{% if item.finished_at %}{{ item.finished_at|datetime_format }}{% endif %}</a></td>
+              <td>15623</td>
+              <td>{{ utils.badge(item.status) }}</td>
+              <td><a href="https://vk.com/molodyeludy/">Молодые люди | 2024</span></a></td>
+              <td>7/20</td>
+              <td>19.10.2024 13:54:00</td>
+              <td>19.10.2024 13:56:00</td>
               <td><a href="/admin/parsers/{{ item.id }}/">{% if item.error_message %}{{ item.error_message }}{% endif %}</a></td>
             </tr>
             {% endfor %}
