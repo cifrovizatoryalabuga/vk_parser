@@ -159,6 +159,7 @@ class VkStorage:
         )
         res = await session.scalars(query)
         return [VkGroupUser.model_validate(r) for r in res]
+    
 
 
 NType = TypeVar("NType", bound=Any)
