@@ -12,11 +12,18 @@ from aiohttp import hdrs
 from aiohttp.web import AbstractRoute, Application
 from aiomisc.service.aiohttp import AIOHTTPService
 
+from vk_parser.admin.handlers.add_messages_to_db import AddMessagesToBDHandler
+from vk_parser.admin.handlers.add_users_to_db import AddUsersToBDHandler
+from vk_parser.admin.handlers.delete_accounts_db import DeleteAccountsBDHandler
+from vk_parser.admin.handlers.delete_messages_db import DeleteMessagesBDHandler
 from vk_parser.admin.handlers.parser_request_create import ParserRequestCreateHandler
 from vk_parser.admin.handlers.parser_request_detail import ParserRequestDetailHandler
 from vk_parser.admin.handlers.parser_request_list import ParserRequestListHandler
 from vk_parser.admin.handlers.ping import PingHandler
 from vk_parser.admin.handlers.views.index import IndexTemplateHandler
+from vk_parser.admin.handlers.views.parser_request_accounts import (
+    ParserRequestListAccountsTemplateHandler,
+)
 from vk_parser.admin.handlers.views.parser_request_create import (
     ParserRequestCreateTemplateHandler,
 )
@@ -25,6 +32,9 @@ from vk_parser.admin.handlers.views.parser_request_detail import (
 )
 from vk_parser.admin.handlers.views.parser_request_list import (
     ParserRequestListTemplateHandler,
+)
+from vk_parser.admin.handlers.views.parser_request_messages import (
+    ParserRequestListMessagesTemplateHandler,
 )
 from vk_parser.admin.handlers.views.redirect_to_admin import RedirectToAdminHandler
 from vk_parser.admin.handlers.views.vk_group_user_download_csv import (
@@ -77,6 +87,30 @@ class Admin(AIOHTTPService):
             ParserRequestDetailHandler,
             "parser_request_detail",
         ),
+        (
+            hdrs.METH_GET,
+            "/api/v1/add_accounts_db/",
+            AddUsersToBDHandler,
+            "parser_request_add_accounts",
+        ),
+        (
+            hdrs.METH_GET,
+            "/api/v1/add_messages_db/",
+            AddMessagesToBDHandler,
+            "parser_request_add_messages",
+        ),
+        (
+            hdrs.METH_GET,
+            "/api/v1/delete_messages_db/",
+            DeleteMessagesBDHandler,
+            "parser_request_delete_messages",
+        ),
+        (
+            hdrs.METH_GET,
+            "/api/v1/delete_accounts_db/",
+            DeleteAccountsBDHandler,
+            "parser_request_delete_accounts",
+        ),
         (hdrs.METH_GET, "/", RedirectToAdminHandler, "redirect_to_admin"),
         (hdrs.METH_GET, "/admin/", IndexTemplateHandler, "admin"),
         (
@@ -104,10 +138,40 @@ class Admin(AIOHTTPService):
             "parser_request_detail_template",
         ),
         (
+            hdrs.METH_POST,
+            "/admin/parsers/{id}/",
+            ParserRequestDetailTemplateHandler,
+            "parser_request_detail_template",
+        ),
+        (
             hdrs.METH_GET,
             "/admin/parsers/{id}/users/",
             VkGroupUserDownloadCsvHandler,
             "parser_request_users_download",
+        ),
+        (
+            hdrs.METH_GET,
+            "/admin/accounts/",
+            ParserRequestListAccountsTemplateHandler,
+            "parser_request_accounts_template",
+        ),
+        (
+            hdrs.METH_POST,
+            "/admin/accounts/",
+            ParserRequestListAccountsTemplateHandler,
+            "parser_request_accounts_template",
+        ),
+        (
+            hdrs.METH_GET,
+            "/admin/messages/",
+            ParserRequestListMessagesTemplateHandler,
+            "parser_request_messages_template",
+        ),
+        (
+            hdrs.METH_POST,
+            "/admin/messages/",
+            ParserRequestListMessagesTemplateHandler,
+            "parser_request_messages_template",
         ),
     )
 

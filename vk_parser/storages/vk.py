@@ -1,19 +1,26 @@
+import logging
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
+from random import choice
 from typing import Any, TypeVar
 
 import sqlalchemy.dialects.postgresql as postgresql
 from sqlalchemy import and_, cast, delete, insert, not_, select
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from vk_parser.clients.vk import VkGroupMember, VkWallPost
 from vk_parser.db.models.vk_group import VkGroup as VkGroupDb
 from vk_parser.db.models.vk_group_post import VkGroupPost as VkGroupPostDb
 from vk_parser.db.models.vk_group_user import VkGroupUser as VkGroupUserDb
+from vk_parser.db.models.vk_user_messanger import Messages as MessagesDb
+from vk_parser.db.models.vk_user_messanger import SendAccounts as SendAccountsDb
 from vk_parser.db.utils import inject_session
 from vk_parser.generals.models.vk_group import VkGroup
 from vk_parser.generals.models.vk_group_post import VkGroupPost
 from vk_parser.generals.models.vk_group_user import VkGroupUser
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,6 +110,22 @@ class VkStorage:
         await session.commit()
 
     @inject_session
+    async def remove_users_by_id(
+        self,
+        session: AsyncSession,
+        ids: Iterable[int],
+        group_id: int,
+    ) -> None:
+        query = delete(VkGroupUserDb).where(
+            and_(
+                VkGroupUserDb.vk_user_id.in_(ids),
+                VkGroupUserDb.vk_group_id == group_id,
+            )
+        )
+        await session.execute(query)
+        await session.commit()
+
+    @inject_session
     async def get_group_user_ids(
         self,
         session: AsyncSession,
@@ -159,6 +182,63 @@ class VkStorage:
         )
         res = await session.scalars(query)
         return [VkGroupUser.model_validate(r) for r in res]
+
+    @inject_session
+    async def add_accounts_bd(
+        self, session: AsyncSession, users: Sequence[str]
+    ) -> None:
+        query = insert(SendAccountsDb)
+        insert_data = [
+            {
+                "login": user.split(":")[0],
+                "password": user.split(":")[1],
+                "secret_token": user.split(":")[2],
+                "successful_messages": 0,
+                "error_status": "no_error",
+                "user_link": "vk.com/workwork",
+                "expire_timestamp": "01.02.2000",
+            }
+            for user in users
+        ]
+        await session.execute(query, insert_data)
+        await session.commit()
+        return None
+
+    @inject_session
+    async def add_messages_bd(
+        self, session: AsyncSession, users: Sequence[str]
+    ) -> None:
+        query = insert(MessagesDb)
+        insert_data = [
+            {
+                "message": user,
+            }
+            for user in users
+        ]
+        try:
+            await session.execute(query, insert_data)
+            await session.commit()
+        except DBAPIError:
+            log.warning("Error save error")
+        return None
+
+    @inject_session
+    async def get_random_account(
+        self,
+        session: AsyncSession,
+    ) -> str:  # type: ignore
+        query = select(SendAccountsDb)
+        res = await session.scalars(query)
+        return choice(res)  # type: ignore
+
+    @inject_session
+    async def get_random_message(
+        self,
+        session: AsyncSession,
+    ) -> str:  # type: ignore
+        query = select(MessagesDb)
+        res = await session.scalars(query)
+        return choice(res)  # type: ignore
 
 
 NType = TypeVar("NType", bound=Any)

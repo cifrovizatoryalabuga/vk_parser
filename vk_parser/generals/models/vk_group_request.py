@@ -8,3 +8,4 @@ class VkGroupRequest(BaseModel):
     id: int
     url: URL
     status: RequestStatus
+        

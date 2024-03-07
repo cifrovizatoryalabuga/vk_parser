@@ -5,11 +5,16 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import ScalarResult, func, insert, select, update
+from aiohttp import web
+from sqlalchemy import ScalarResult, delete, func, insert, select, update
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from vk_parser.db.models.parser_request import ParserRequest as ParserRequestDb
+from vk_parser.db.models.vk_group import VkGroup as VkGroupDb
+from vk_parser.db.models.vk_group_user import VkGroupUser as VkGroupUserDb
+from vk_parser.db.models.vk_user_messanger import Messages as MessagesDb
+from vk_parser.db.models.vk_user_messanger import SendAccounts as SendAccountsDb
 from vk_parser.db.utils import inject_session
 from vk_parser.generals.enums import ParserTypes, RequestStatus
 from vk_parser.generals.models.pagination import PaginationResponse
@@ -18,6 +23,8 @@ from vk_parser.generals.models.parser_request import (
     ParserRequest,
     Result,
 )
+from vk_parser.generals.models.vk_group_user import VkGroupUser
+from vk_parser.generals.models.vk_user_messanger import Messages, SendAccounts
 from vk_parser.storages.base import PaginationMixin
 
 log = logging.getLogger(__name__)
@@ -40,6 +47,37 @@ class ParserRequestStorage(PaginationMixin):
             model_type=ParserRequest,
         )
 
+    async def get_pagination_accounts(
+        self,
+        page: int,
+        page_size: int,
+    ) -> PaginationResponse[SendAccounts]:
+        query = select(SendAccountsDb)
+        return await self._paginate(
+            query=query,
+            page=page,
+            page_size=page_size,
+            model_type=SendAccounts,
+        )
+
+    @inject_session
+    async def delete_messages(
+        self,
+        session: AsyncSession,
+    ) -> None:
+        query = delete(MessagesDb)
+        await session.execute(query)
+        await session.commit()
+
+    @inject_session
+    async def delete_accounts(
+        self,
+        session: AsyncSession,
+    ) -> None:
+        query = delete(SendAccountsDb)
+        await session.execute(query)
+        await session.commit()
+
     async def admin_pagination(
         self,
         page: int,
@@ -51,6 +89,51 @@ class ParserRequestStorage(PaginationMixin):
             page=page,
             page_size=page_size,
             model_type=DetailParserRequest,
+        )
+
+    async def admin_pagination_accounts(
+        self,
+        page: int,
+        page_size: int,
+    ) -> PaginationResponse[SendAccounts]:
+        query = select(SendAccountsDb).order_by(SendAccountsDb.created_at.desc())
+        return await self._paginate(
+            query=query,
+            page=page,
+            page_size=page_size,
+            model_type=SendAccounts,
+        )
+
+    async def admin_pagination_parsed_users(
+        self,
+        parser_request_id: int,
+        page: int,
+        page_size: int,
+    ) -> PaginationResponse[VkGroupUser]:
+        query = (
+            select(VkGroupUserDb)
+            .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
+            .where(VkGroupDb.parser_request_id == parser_request_id)
+            .order_by(VkGroupUserDb.created_at)
+        )
+        return await self._paginate(
+            query=query,
+            page=page,
+            page_size=page_size,
+            model_type=VkGroupUser,
+        )
+
+    async def admin_pagination_messages(
+        self,
+        page: int,
+        page_size: int,
+    ) -> PaginationResponse[Messages]:
+        query = select(MessagesDb).order_by(MessagesDb.created_at.desc())
+        return await self._paginate(
+            query=query,
+            page=page,
+            page_size=page_size,
+            model_type=Messages,
         )
 
     @inject_session
@@ -201,3 +284,26 @@ class ParserRequestStorage(PaginationMixin):
             for req_status, count in res:
                 output.append((pt, req_status, count))
         return output
+
+    @inject_session
+    async def get_random_account(
+        self,
+        session: AsyncSession,
+    ) -> Sequence[SendAccountsDb]:
+        query = select(SendAccountsDb)
+        result = await session.execute(query)
+        return result.scalars().all()
+
+    @inject_session
+    async def get_random_message(
+        self,
+        session: AsyncSession,
+    ) -> Sequence[MessagesDb]:
+        query = select(MessagesDb)
+        result = await session.execute(query)
+        return result.scalars().all()
+
+    async def redirector(
+        self,
+    ) -> Exception:
+        raise web.HTTPFound("/")

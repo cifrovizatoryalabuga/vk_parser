@@ -24,6 +24,19 @@ class RequestStatus(StrEnum):
 
 
 @unique
+class SendMessagesTypes(StrEnum):
+    MASS_MESSAGES_SENDER = "MASS_MESSAGES_SENDER"
+
+
+@unique
+class MessagesStatus(StrEnum):
+    SENDING = "SENDING"
+    QUEUED = "QUEUED"
+    FAILED = "FAILED"
+    SUCCESSFUL = "SUCCESSFUL"
+
+
+@unique
 class RequestMessage(StrEnum):
     EMPTY_USERS = "Empty users"
     EMPTY_POSTS = "Posts with users not found"
