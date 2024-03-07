@@ -37,3 +37,7 @@ class Messages(TimestampMixin, Base):
         String(1024),
         nullable=False,
     )
+
+
+class SendMessagesDetail(TimestampMixin, Base):
+    """Статус массовой рассылки сообщений"""

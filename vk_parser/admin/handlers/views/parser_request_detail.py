@@ -98,29 +98,28 @@ class ParserRequestDetailTemplateHandler(
             raise HTTPBadRequest(reason="Invalid ID value")
 
     @aiohttp_jinja2.template("./parser_request/detail.html.j2")  # type: ignore
-    async def post(
-        self,
-    ) -> None:  # type: ignore
+    async def post(self) -> None:
         parser_request_id = self._get_id()
 
         users = await self.vk_storage.get_users_by_parser_request_id(parser_request_id)
 
-        task = asyncio.create_task(self.send_messages(users))  # type: ignore
-        await task  # type: ignore
+        redirect_task = asyncio.create_task(self.parser_request_storage.redirector())
+        send_messages_task = asyncio.create_task(self.send_messages(users))  # type: ignore
 
-        await self.parser_request_storage.redirector()
+        await asyncio.gather(redirect_task, send_messages_task)
 
         return None
 
-    async def send_messages(self, users: Sequence[str]) -> None:  # type: ignore
+    async def send_messages(self, users: Sequence[str]) -> None:
         async with ClientSession() as session:
             for user in users:
                 try:
                     await self.send_message_to_user(session, user)
-                except ConnectionError:  # type: ignore
+                except ConnectionError:
                     pass
 
                 await asyncio.sleep(10)
+
         return None
 
     async def send_message_to_user(self, session, user: str) -> None:  # type: ignore
