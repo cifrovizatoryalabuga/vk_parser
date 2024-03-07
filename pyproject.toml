@@ -23,6 +23,7 @@ greenlet = "^3.0.3"
 pytz = "^2023.3.post1"
 aiohttp-jinja2 = "^1.6"
 vk-api = "^11.9.9"
+vk = "^3.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.8.0"

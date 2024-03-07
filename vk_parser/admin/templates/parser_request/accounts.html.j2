@@ -7,39 +7,42 @@
   <div class="section">
     <div class="row">
       <div class="col s12">
-        <h2 class="light-blue-text darken-3">Список статусов сообщений</h2>
+        <h2 class="light-blue-text darken-3">Список аккаунтов для рассылки</h2>
       </div>
       <div class="col s12">
-        <p>Всего массовых рассылок : {{ pagination.meta.total }} </p>
+        <p>Всего аккаунтов на рассылку : {{ pagination.meta.total }} </p>
       </div>
 
     </div>
 
     <div class="row">
+      <div class="col s9">
+        <a href="/api/v1/delete_accounts_db/" class="red waves-effect waves-light btn-small"><i class="material-icons left">cloud</i>Удалить аккаунты</a>
+      </div>
         <div class="col s12">
             <table class="striped highlight">
           <thead>
             <tr>
-                <th>ID</th>
-                <th>Статус</th>
-                <th>Название группы</th>
-                <th>Кол-во отправленных сообщений</th>
-                <th>Создано</th>
-                <th>Завершено</th>
+                <th>Логин</th>
+                <th>Пароль</th>
+                <th>Входящих сообщений</th>
+                <th>Удачные сообщения</th>
                 <th>Ошибка</th>
+                <th>Ссылка</th>
+                <th>Время восстановления</th>
             </tr>
           </thead>
 
           <tbody>
             {% for item in pagination.items %}
             <tr class="waves-efffect">
-              <td>15623</td>
-              <td>{{ utils.badge(item.status) }}</td>
-              <td><a href="https://vk.com/molodyeludy/">Молодые люди | 2024</span></a></td>
-              <td>7/20</td>
-              <td>19.10.2024 13:54:00</td>
-              <td>19.10.2024 13:56:00</td>
-              <td><a href="/admin/parsers/{{ item.id }}/">{% if item.error_message %}{{ item.error_message }}{% endif %}</a></td>
+              <td>{{ item.login }}</td>
+              <td>{{ item.password }}</td>
+              <td>0</td>
+              <td>{{ item.successful_messages }}</td>
+              <td>{{ item.error_status }}</td>
+              <td>{{ item.user_link }}</td>
+              <td>{{ item.expire_timestamp }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -67,11 +70,11 @@
                   <label for="accounts">Аккаунты для рассылки</label>
               </div>
             </div>
-            <button class="btn blue waves-effect waves-light" type="submit">LFG BD ADD</button>
+            <button class="btn blue waves-effect waves-light" type="submit">Загрузить аккаунты</button>
           </form>
           <form action="/api/v1/send_messages/" class="col s12" method="get">
             <div class="row">
-              <label for="accounts">Запустить рассылку</label>
+              <label for="accounts">Формат: login:password:token разделитель - enter</label>
             </div>
           </form>
         </ul>

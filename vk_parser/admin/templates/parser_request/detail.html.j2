@@ -23,9 +23,10 @@
     </div>
     {% if parser_request.status == "SUCCESSFUL" %}
     <div class="row">
-      <div class="col s6">
-      <h5>Результат</h5>
+      <div class="col s9">
         <a href="/admin/parsers/{{parser_request.id}}/users/" class="waves-effect waves-light btn-small"><i class="material-icons left">cloud</i>Скачать таблицу пользователей (csv)</a>
+        <a href="/admin/parsers/{{parser_request.id}}/users/" class="red waves-effect waves-light btn-small"><i class="material-icons left">cloud</i>Удалить пользователей</a>
+        <a href="/admin/parsers/{{parser_request.id}}/users/" class="blue waves-effect waves-light btn-small"><i class="material-icons left">cloud</i>Отправить сообщения</a>
       </div>
       <br>
       {% if parser_request.parser_type == "VK_DOWNLOAD_AND_PARSED_POSTS"%}
@@ -47,7 +48,7 @@
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.vk_user_id }}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.first_name }}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.last_name }}</span></a></td>
-              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format }}{% endif %}</a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
               <td>
               {% for post in item.posts %}
@@ -58,9 +59,64 @@
             {% endfor %}
           </tbody>
         </table>
-        <form class="col s12" method="post">
-          <button class="btn blue waves-effect waves-light" type="submit">Отправить сообщения</button>
-        </form>
+        <tr class="waves-efffect">
+          <td><form class="col s12" method="post">
+            <button class="btn blue waves-effect waves-light" type="submit">Отправить сообщения</button>
+          </form></td>
+          <td><form class="col s12" method="post" action="start_messages">
+            <button class="btn red waves-effect waves-light" type="submit">Удалить пользователей</button>
+          </form></td>
+        </tr>
+        {% elif parser_request.parser_type == "VK_SIMPLE_DOWNLOAD"%}
+        <div class="row">
+          <div class="col s12">
+            <h2 class="light-blue-text darken-3">Список пользователей</h2>
+          </div>
+          <div class="col s12">
+            <p>Всего человек загружено : {{ user_data | length }} </p>
+          </div>
+
+        </div>
+       <table class="striped highlight">
+          <thead>
+            <tr>
+                <th>VK ID</th>
+                <th>Фамилия</th>
+                <th>Имя</th>
+                <th>Дата рождения</th>
+                <th>Последний вход в ВК</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for item in pagination.items %}
+            <tr class="waves-efffect">
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.vk_user_id }}</a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.first_name }}</a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.last_name }}</span></a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <ul class="pagination">
+          {% with page = pagination.meta.page, page_size = pagination.meta.page_size, pages = pagination.meta.pages %}
+            {% if page != 1 %}
+            <li class="waves-effect">
+              <a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">
+              <i class="material-icons">chevron_left</i></a>
+              </li>
+            {%endif%}
+            <li class="active"><a href="#!">{{ page }}</a></li>
+            {% if page != pages%}
+            <li class="waves-effect">
+            <a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
+            </li>
+            {%endif%}
+          {%endwith%}
+        </ul>
         {% endif %}
     </div>
     {% endif %}

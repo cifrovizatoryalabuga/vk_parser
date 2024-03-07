@@ -22,14 +22,19 @@ class RequestStatus(StrEnum):
     EMPTY = "EMPTY"
     SUCCESSFUL = "SUCCESSFUL"
 
+
+@unique
+class SendMessagesTypes(StrEnum):
+    MASS_MESSAGES_SENDER = "MASS_MESSAGES_SENDER"
+
+
 @unique
 class MessagesStatus(StrEnum):
     SENDING = "SENDING"
-    COMPLETE = "COMPLETE"
-    STARTING = "STARTING"
+    QUEUED = "QUEUED"
     FAILED = "FAILED"
-    EMPTY = "EMPTY"
-    
+    SUCCESSFUL = "SUCCESSFUL"
+
 
 @unique
 class RequestMessage(StrEnum):

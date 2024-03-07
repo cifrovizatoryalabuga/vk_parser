@@ -10,8 +10,8 @@ from vk_parser.db.utils import make_pg_enum
 from vk_parser.generals.enums import MessagesStatus
 
 
-class VkSendMessage(TimestampMixin, Base):
-    """Запрос на рассылку"""
+class MessageSendRequest(TimestampMixin, Base):
+    """Запрос на рассылку сообщений"""
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     status: Mapped[MessagesStatus] = mapped_column(

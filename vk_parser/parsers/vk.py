@@ -17,7 +17,7 @@ from vk_parser.generals.models.parser_request import (
     UserStat,
 )
 from vk_parser.generals.models.vk_group import VkGroup
-from vk_parser.parsers.base import BaseParser
+from vk_parser.parsers.base import BaseParser, BaseSender
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.vk import VkStorage
 from vk_parser.utils.parsers import map_users_in_posts, search_user_vk_ids
@@ -251,3 +251,15 @@ class SimpleVkParser(BaseParser):
         if users:
             await self.vk_storage.create_users(users, vk_group.id)
         return users
+
+
+@dataclass(frozen=True, slots=True)
+class SendMessages(BaseSender):
+    vk_client: Vk
+    vk_storage: VkStorage
+    parser_request_storage: ParserRequestStorage
+
+    async def _process(
+        self, parser_request_id: int, input_data: dict[str, Any]
+    ) -> None:
+        pass
