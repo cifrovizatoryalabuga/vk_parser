@@ -1,9 +1,8 @@
 from datetime import datetime
-from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from vk_parser.generals.enums import MessagesStatus, SendMessagesTypes
+from vk_parser.generals.enums import MessagesStatus
 
 
 class SendAccounts(BaseModel):
@@ -26,7 +25,7 @@ class Messages(BaseModel):
     message: str
 
 
-class SendMessangerDetail(BaseModel):
+class SendMessangesDetail(BaseModel):
     """
     Модель для валидации базы данных SendMessanger.
 
@@ -37,9 +36,7 @@ class SendMessangerDetail(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    type: Literal[SendMessagesTypes.MASS_MESSAGES_SENDER]
-    status: MessagesStatus
+    status_message: MessagesStatus
     success_message: int
-    total_message: int
     created_at: datetime
     finished_at: datetime | None

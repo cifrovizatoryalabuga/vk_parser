@@ -25,6 +25,7 @@
     <div class="row">
       <div class="col s9">
         <a href="/admin/parsers/{{parser_request.id}}/users/" class="waves-effect waves-light btn-small"><i class="material-icons left">cloud</i>Скачать таблицу пользователей (csv)</a>
+        <a href="/api/v1/send_messages/" class="blue waves-effect waves-light btn-small"><i class="material-icons left">cloud</i>Отправить сообщения</a>
         <tr class="waves-efffect">
           <td>
           <form class="col s12" method="post">
@@ -96,6 +97,8 @@
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.last_name }}</span></a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
+              <td>
+                <span class="delete-icon" onclick="toggleDelete('{{ item.vk_user_id }}', '{{ parser_request.id }}')">&#10006;</span>
               </td>
             </tr>
             {% endfor %}
@@ -122,4 +125,29 @@
     {% endif %}
   </div>
 </div>
+
+<script>
+  function toggleDelete(userId, parserId) {
+      // Отправка данных на сервер
+      fetch('/admin/delete_user/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: userId,
+          parserId: parserId
+        })
+      })
+      .then(response => {
+        // Обработка ответа от сервера
+        console.log(response);
+      })
+      .catch(error => {
+        // Обработка ошибки
+        console.error('Ошибка:', error);
+      });
+  }
+</script>
+
 {% endblock %}

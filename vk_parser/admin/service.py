@@ -16,6 +16,9 @@ from vk_parser.admin.handlers.add_messages_to_db import AddMessagesToBDHandler
 from vk_parser.admin.handlers.add_users_to_db import AddUsersToBDHandler
 from vk_parser.admin.handlers.delete_accounts_db import DeleteAccountsBDHandler
 from vk_parser.admin.handlers.delete_messages_db import DeleteMessagesBDHandler
+from vk_parser.admin.handlers.delete_user_from_parser import (
+    DeleteUserFromParserBDHandler,
+)
 from vk_parser.admin.handlers.parser_request_create import ParserRequestCreateHandler
 from vk_parser.admin.handlers.parser_request_detail import ParserRequestDetailHandler
 from vk_parser.admin.handlers.parser_request_list import ParserRequestListHandler
@@ -172,6 +175,12 @@ class Admin(AIOHTTPService):
             "/admin/messages/",
             ParserRequestListMessagesTemplateHandler,
             "parser_request_messages_template",
+        ),
+        (
+            hdrs.METH_POST,
+            "/admin/delete_user/",
+            DeleteUserFromParserBDHandler,
+            "request_user_delete",
         ),
     )
 

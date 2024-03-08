@@ -1,7 +1,11 @@
-from sqlalchemy import BigInteger, String
+from datetime import datetime
+
+from sqlalchemy import BigInteger, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from vk_parser.db.models.base import Base, TimestampMixin
+from vk_parser.db.utils import make_pg_enum
+from vk_parser.generals.enums import MessagesStatus
 
 
 class SendAccounts(TimestampMixin, Base):
@@ -41,3 +45,24 @@ class Messages(TimestampMixin, Base):
 
 class SendMessagesDetail(TimestampMixin, Base):
     """Статус массовой рассылки сообщений"""
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    status_message: Mapped[MessagesStatus] = mapped_column(
+        make_pg_enum(
+            MessagesStatus,
+            name="status_messages",
+            schema=None,
+        ),
+        nullable=False,
+        server_default=MessagesStatus.SENDING.value,
+    )
+    success_message: Mapped[int] = mapped_column(
+        BigInteger,
+        nullable=False,
+        default=0,
+    )
+
+    finished_at: Mapped[datetime | None] = mapped_column(
+        DateTime(),
+        nullable=True,
+    )
