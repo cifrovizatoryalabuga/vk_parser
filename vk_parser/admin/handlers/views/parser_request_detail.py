@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import date
 from random import choice
@@ -98,28 +98,30 @@ class ParserRequestDetailTemplateHandler(
             raise HTTPBadRequest(reason="Invalid ID value")
 
     @aiohttp_jinja2.template("./parser_request/detail.html.j2")  # type: ignore
-    async def post(self) -> None:
+    async def post(self) -> None:  # type: ignore
         parser_request_id = self._get_id()
 
-        users = await self.vk_storage.get_users_by_parser_request_id(parser_request_id)
+        # Создаем задачи для редиректа и отправки сообщений
+        redirector_task = asyncio.create_task(
+            self.parser_request_storage.redirector(url="/")
+        )
+        send_messages_task = asyncio.create_task(self.send_messages(parser_request_id))
 
-        redirect_task = asyncio.create_task(self.parser_request_storage.redirector())
-        send_messages_task = asyncio.create_task(self.send_messages(users))  # type: ignore
-
-        await asyncio.gather(redirect_task, send_messages_task)
+        # Ожидаем выполнение редиректа и отправки сообщений
+        await asyncio.gather(redirector_task, send_messages_task)
 
         return None
 
-    async def send_messages(self, users: Sequence[str]) -> None:
+    async def send_messages(self, parser_request_id: int) -> None:
+        users = await self.vk_storage.get_users_by_parser_request_id(parser_request_id)
         async with ClientSession() as session:
             for user in users:
                 try:
-                    await self.send_message_to_user(session, user)
+                    await self.send_message_to_user(session, user)  # type: ignore
                 except ConnectionError:
                     pass
 
                 await asyncio.sleep(10)
-
         return None
 
     async def send_message_to_user(self, session, user: str) -> None:  # type: ignore
@@ -138,5 +140,6 @@ class ParserRequestDetailTemplateHandler(
             },
         ) as response:
             await response.json()
+            print(response)
 
         return None

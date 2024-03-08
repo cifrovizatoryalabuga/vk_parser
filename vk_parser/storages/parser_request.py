@@ -24,7 +24,10 @@ from vk_parser.generals.models.parser_request import (
     Result,
 )
 from vk_parser.generals.models.vk_group_user import VkGroupUser
-from vk_parser.generals.models.vk_user_messanger import Messages, SendAccounts
+from vk_parser.generals.models.vk_user_messanger import (
+    Messages,
+    SendAccounts,
+)
 from vk_parser.storages.base import PaginationMixin
 
 log = logging.getLogger(__name__)
@@ -303,7 +306,8 @@ class ParserRequestStorage(PaginationMixin):
         result = await session.execute(query)
         return result.scalars().all()
 
-    async def redirector(
+    async def redirector(  # type: ignore
         self,
+        url,
     ) -> Exception:
-        raise web.HTTPFound("/")
+        raise web.HTTPFound(url)

@@ -110,20 +110,17 @@ class VkStorage:
         await session.commit()
 
     @inject_session
-    async def remove_users_by_id(
-        self,
-        session: AsyncSession,
-        ids: Iterable[int],
-        group_id: int,
-    ) -> None:
-        query = delete(VkGroupUserDb).where(
-            and_(
-                VkGroupUserDb.vk_user_id.in_(ids),
-                VkGroupUserDb.vk_group_id == group_id,
+    async def remove_users_by_id(self, session: AsyncSession, id: int) -> None:
+        try:
+            query = delete(VkGroupUserDb).where(
+                VkGroupUserDb.vk_user_id == id,
             )
-        )
-        await session.execute(query)
-        await session.commit()
+            await session.execute(query)
+            await session.commit()
+        except Exception as e:
+            print("OSHIBKA EBANY")
+            await session.rollback()
+            raise e
 
     @inject_session
     async def get_group_user_ids(
