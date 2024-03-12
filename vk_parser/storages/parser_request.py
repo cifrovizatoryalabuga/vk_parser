@@ -138,27 +138,35 @@ class ParserRequestStorage(PaginationMixin):
         page_size: int,
     ) -> PaginationResponse[VkGroupUser]:
         if filtered_city and filtered_year_from and filtered_year_to:
-            print(1)
+            if filtered_city != "all_cities":
+                print(filtered_city)
+            if filtered_city == "None":
+                filtered_city = None
             query = (
-                    select(VkGroupUserDb)
-                    .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
-                    .where(
-                        and_(
-                        VkGroupDb.parser_request_id == parser_request_id,
-                        VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y'),
-                        VkGroupUserDb.birth_date <= dt.datetime.strptime(f"31.12.{filtered_year_to}", '%d.%m.%Y'),
-                    )
+                select(VkGroupUserDb)
+                .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
+                .where(
+                    and_(VkGroupDb.parser_request_id == parser_request_id),
+                    (VkGroupUserDb.city == filtered_city),
+                    (VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y')),
+                    (VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", '%d.%m.%Y')),
                 )
-                    .order_by(VkGroupUserDb.created_at)
-                )
+                .order_by(VkGroupUserDb.created_at)
+            )
         else:
             print(2)
             query = (
-                    select(VkGroupUserDb)
-                    .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
-                    .where(VkGroupDb.parser_request_id == parser_request_id)
-                    .order_by(VkGroupUserDb.created_at)
+                select(VkGroupUserDb)
+                .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
+                .where(
+                    and_(
+                        VkGroupDb.parser_request_id == parser_request_id,
+                        VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y'),
+                        VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", '%d.%m.%Y'),
+                    )
                 )
+                .order_by(VkGroupUserDb.created_at)
+            )
         return await self._paginate(
             query=query,
             page=page,

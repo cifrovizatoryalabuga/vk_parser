@@ -16,9 +16,11 @@
     </div>
 
     <div class="row">
-      <div class="col s9">
-        <a href="/api/v1/delete_accounts_db/" class="red waves-effect waves-light btn-small"><i class="material-icons left">cloud</i>Удалить аккаунты</a>
-      </div>
+      <form action="/api/v1/delete_accounts_db/" method="post">
+        <button type="submit" class="red waves-effect waves-light btn-small">
+            <i class="material-icons left">cloud</i>Удалить аккаунты
+        </button>
+    </form>
         <div class="col s12">
             <table class="striped highlight">
           <thead>
