@@ -26,4 +26,10 @@ class VkGroupUser(TimestampMixin, Base):
     last_name: Mapped[str | None] = mapped_column(
         String(1024), nullable=True, index=True
     )
+    sex: Mapped[str | None] = mapped_column(
+        String(1024), nullable=True, index=True
+    )
+    city: Mapped[str | None] = mapped_column(
+        String(1024), nullable=True, index=True
+    )
     last_visit_vk_date: Mapped[date | None] = mapped_column(Date, nullable=True)

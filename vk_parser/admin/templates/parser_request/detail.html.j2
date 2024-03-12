@@ -23,19 +23,50 @@
     </div>
     {% if parser_request.status == "SUCCESSFUL" %}
     <div class="row">
+      <div class="col s6">
+          <a href="/admin/parsers/{{parser_request.id}}/users/" class="waves-effect waves-light btn-small">
+              <i class="material-icons left">cloud</i>Скачать таблицу пользователей (csv)
+          </a>
+      </div>
+      <div class="col s6">
+          <form action="/admin/parsers/{{parser_request.id}}/" method="post">
+            <button class="blue waves-effect waves-light btn-small" type="submit">
+                <i class="material-icons left">cloud</i>Отправить сообщения
+            </button>
+          </form>
+      </div>
+    </div>
+    <div class="row">
       <div class="col s9">
-        <a href="/admin/parsers/{{parser_request.id}}/users/" class="waves-effect waves-light btn-small"><i class="material-icons left">cloud</i>Скачать таблицу пользователей (csv)</a>
-        <a href="/api/v1/send_messages/" class="blue waves-effect waves-light btn-small"><i class="material-icons left">cloud</i>Отправить сообщения</a>
-        <tr class="waves-efffect">
-          <td>
-          <form class="col s12" method="post">
-            <button class="btn blue waves-effect waves-light" type="submit">Отправить сообщения</button>
-          </form></td>
-          <td>
-          <form class="col s12" method="post" action="start_messages">
-            <button class="btn red waves-effect waves-light" type="submit">Удалить пользователей</button>
-          </form></td>
-        </tr>
+          <form action="/admin/parsers/{{ parser_request.id }}/" method="get">
+            <div class="row">
+              <div class="input-field col s12">
+                <select name="city" id="citySelect">
+                    <option value="" disabled>Выберите город</option>
+                    <option value="all_cities">Все города!</option>
+                    {% for city in all_cities %}
+                        <option value="{{ city }}"{{ city }}>{{ city }}</option>
+                    {% endfor %}
+                </select>
+                <label>Город</label>
+              </div>
+              <div class="row">
+                <div class="input-field col s6">
+                    <i class="material-icons prefix">link</i>
+                    <input name="from_user_year" id="from_user_year" type="text" class="validate" value="1900">
+                    <label for="from_user_year">От года рождения</label>
+                </div>
+                <div class="input-field col s6">
+                  <i class="material-icons prefix">link</i>
+                  <input name="to_user_year" id="to_user_year" type="text" class="validate" value="2024">
+                  <label for="to_user_year">До года рождения</label>
+                </div>
+              </div>
+            </div>
+            <button class="btn blue waves-effect waves-light" type="submit">Фильтр
+              <i class="material-icons right">send</i>
+            </button>
+          </form>
       </div>
       <br>
       {% if parser_request.parser_type == "VK_DOWNLOAD_AND_PARSED_POSTS"%}
@@ -44,6 +75,7 @@
             <tr>
                 <th>VK ID</th>
                 <th>Фамилия</th>
+                <th>Пол</th>
                 <th>Имя</th>
                 <th>Дата рождения</th>
                 <th>Последний вход в ВК</th>
@@ -56,6 +88,7 @@
             <tr class="waves-efffect">
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.vk_user_id }}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.first_name }}</a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.sex }}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.last_name }}</span></a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
@@ -84,17 +117,21 @@
                 <th>VK ID</th>
                 <th>Фамилия</th>
                 <th>Имя</th>
+                <th>Пол</th>
+                <th>Город</th>
                 <th>Дата рождения</th>
                 <th>Последний вход в ВК</th>
             </tr>
           </thead>
 
           <tbody>
-            {% for item in pagination.items %}
+            {% for item in user_data %}
             <tr class="waves-efffect">
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.vk_user_id }}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.first_name }}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.last_name }}</span></a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.sex }}</a></td>
+              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.city }}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
               <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
               <td>
@@ -106,18 +143,60 @@
         </table>
         <ul class="pagination">
           {% with page = pagination.meta.page, page_size = pagination.meta.page_size, pages = pagination.meta.pages %}
-            {% if page != 1 %}
-            <li class="waves-effect">
-              <a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">
-              <i class="material-icons">chevron_left</i></a>
+            {% if pages <= 5 %}
+              {% if page != 1 %}
+              <li class="waves-effect">
+                <a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">
+                <i class="material-icons">chevron_left</i></a>
+                </li>
+              {%endif%}
+              {% if page == 1 %}
+              <li class="active"><a href="#!">{{ page }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
+              {% elif page == pages %}
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
+              <li class="active"><a href="#!">{{ page }}</a></li>
+              {% elif page > 1 %}
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
+              <li class="active"><a href="#!">{{ page }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
+              {%endif%}
+              {% if page != pages%}
+              <li class="waves-effect">
+              <a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
               </li>
-            {%endif%}
-            <li class="active"><a href="#!">{{ page }}</a></li>
-            {% if page != pages%}
-            <li class="waves-effect">
-            <a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
-            </li>
-            {%endif%}
+              {%endif%}
+            {% elif pages > 5 %}
+              {% if page != 1 %}
+                <li class="waves-effect">
+                  <a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">
+                  <i class="material-icons">chevron_left</i></a>
+                </li>
+              {%endif%}
+              {% if page == 1 %}
+              <li class="active"><a href="#!">{{ page }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 2 }}">{{ page + 2 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 3 }}">{{ page + 3 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 4 }}">{{ page + 4 }}</a></li>
+              {% elif page == pages %}
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 4 }}">{{ page - 4 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 3 }}">{{ page - 3 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 2 }}">{{ page - 2 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
+              <li class="active"><a href="#!">{{ page }}</a></li>
+              {% elif page > 1 %}
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
+              <li class="active"><a href="#!">{{ page }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
+              {%endif%}
+              {% if page != pages%}
+                <li class="waves-effect">
+                  <a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}">
+                  <i class="material-icons">chevron_right</i></a>
+                </li>
+              {%endif%}
+            {% endif %}
           {%endwith%}
         </ul>
         {% endif %}
@@ -126,7 +205,25 @@
   </div>
 </div>
 
+
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+
 <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('select');
+    var instances = M.FormSelect.init(elems, {});
+  });
+
+  // Or with jQuery
+
+  $(document).ready(function(){
+    $('select').formSelect();
+  });
+
   function toggleDelete(userId, parserId) {
       // Отправка данных на сервер
       fetch('/admin/delete_user/', {
@@ -151,3 +248,4 @@
 </script>
 
 {% endblock %}
+

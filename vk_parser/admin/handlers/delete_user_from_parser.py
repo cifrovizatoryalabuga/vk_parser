@@ -14,7 +14,6 @@ class DeleteUserFromParserBDHandler(web.View, DependenciesMixin, ListMixin):
 
             await self.vk_storage.remove_users_by_id(id=int(user_id))
 
-            # Return a response that triggers a page refresh
             return web.Response(
                 text="<script>window.location.replace('/admin/parsers/{parser_id}/');</script>",
                 content_type="text/html",
@@ -22,6 +21,5 @@ class DeleteUserFromParserBDHandler(web.View, DependenciesMixin, ListMixin):
             )
 
         except Exception as e:
-            # Обработка ошибок
             print(f"Error while processing request: {e}")
             return web.Response(status=500)

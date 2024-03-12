@@ -3,7 +3,9 @@ from asyncio import gather
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
+from operator import and_
 from typing import Any
+import datetime as dt
 
 from aiohttp import web
 from sqlalchemy import ScalarResult, delete, func, insert, select, update
@@ -119,6 +121,44 @@ class ParserRequestStorage(PaginationMixin):
             .where(VkGroupDb.parser_request_id == parser_request_id)
             .order_by(VkGroupUserDb.created_at)
         )
+        return await self._paginate(
+            query=query,
+            page=page,
+            page_size=page_size,
+            model_type=VkGroupUser,
+        )
+
+    async def admin_pagination_parsed_users_filtered(
+        self,
+        parser_request_id: int,
+        filtered_city: str,
+        filtered_year_from: str,
+        filtered_year_to: str,
+        page: int,
+        page_size: int,
+    ) -> PaginationResponse[VkGroupUser]:
+        if filtered_city and filtered_year_from and filtered_year_to:
+            print(1)
+            query = (
+                    select(VkGroupUserDb)
+                    .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
+                    .where(
+                        and_(
+                        VkGroupDb.parser_request_id == parser_request_id,
+                        VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y'),
+                        VkGroupUserDb.birth_date <= dt.datetime.strptime(f"31.12.{filtered_year_to}", '%d.%m.%Y'),
+                    )
+                )
+                    .order_by(VkGroupUserDb.created_at)
+                )
+        else:
+            print(2)
+            query = (
+                    select(VkGroupUserDb)
+                    .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
+                    .where(VkGroupDb.parser_request_id == parser_request_id)
+                    .order_by(VkGroupUserDb.created_at)
+                )
         return await self._paginate(
             query=query,
             page=page,
