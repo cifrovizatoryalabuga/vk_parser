@@ -109,7 +109,7 @@ class Admin(AIOHTTPService):
             "parser_request_delete_messages",
         ),
         (
-            hdrs.METH_GET,
+            hdrs.METH_POST,
             "/api/v1/delete_accounts_db/",
             DeleteAccountsBDHandler,
             "parser_request_delete_accounts",

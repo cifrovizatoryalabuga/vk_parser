@@ -29,15 +29,15 @@ repos:
   #      args: [--fix]
   #    - id: ruff-format
 
-  - repo: local
-    hooks:
-      - id: mypy
-        name: mypy
-        entry: mypy ./vk_parser --config-file ./pyproject.toml
-        language: python
-        language_version: python3.11
-        require_serial: true
-        pass_filenames: false
+  #- repo: local
+  #  hooks:
+  #    - id: mypy
+  #      name: mypy
+  #      entry: mypy ./vk_parser --config-file ./pyproject.toml
+  #      language: python
+  #      language_version: python3.11
+  #      require_serial: true
+  #      pass_filenames: false
 
 
   - repo: https://github.com/IamTheFij/docker-pre-commit

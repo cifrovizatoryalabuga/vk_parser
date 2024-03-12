@@ -53,6 +53,8 @@ class VkGroupMember(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
     last_seen: VkLastSeen | None = None
+    sex: int | None = Field(alias="sex", default=None)
+    city: dict | None = Field(alias="city", default=None)
 
     def in_age_range(self, max_age: int) -> bool:
         if not self.birth_date:
@@ -221,7 +223,7 @@ class Vk(BaseHttpClient):
     )
 
     DEFAULT_FIELDS_GROUPS_GET_BY_ID: ClassVar[Sequence[str]] = ("members_count", "wall")
-    DEFAULT_FIELDS_GROUPS_GET_MEMBERS: ClassVar[Sequence[str]] = ("bdate", "last_seen")
+    DEFAULT_FIELDS_GROUPS_GET_MEMBERS: ClassVar[Sequence[str]] = ("bdate", "last_seen", "sex", "city")
 
     def __init__(
         self,
@@ -336,6 +338,35 @@ class Vk(BaseHttpClient):
             timeout=timeout,
             data={
                 "screen_name": screen_name,
+                **self._default_kwargs,
+            },
+        )
+
+    @asyncretry(max_tries=8, pause=1)
+    async def get_user_info(
+        self,
+        group_id: int,
+        fields: Sequence[str] = DEFAULT_FIELDS_GROUPS_GET_MEMBERS,
+        offset: int = 0,
+        count: int = 1000,
+        timeout: TimeoutType = DEFAULT_TIMEOUT,
+    ) -> VkGroupMembers | None:
+        log.info(
+            "Request VK API method: groups.getMembers %s %s %s",
+            group_id,
+            offset,
+            count,
+        )
+        return await self._make_req(
+            method=hdrs.METH_POST,
+            url=self._url / "method/groups.getMembers",
+            handlers=self.GET_GROUP_MEMBERS_HANDLERS,
+            timeout=timeout,
+            data={
+                "group_id": group_id,
+                "offset": offset,
+                "fields": ",".join(fields),
+                "count": count,
                 **self._default_kwargs,
             },
         )

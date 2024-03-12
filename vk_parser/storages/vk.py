@@ -3,6 +3,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from random import choice
 from typing import Any, TypeVar
+import datetime as dt
 
 import sqlalchemy.dialects.postgresql as postgresql
 from sqlalchemy import and_, cast, delete, insert, not_, select
@@ -86,6 +87,8 @@ class VkStorage:
                 "birth_date": user.parsed_birth_date,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
+                "sex": sex_convert_vk(user.sex),
+                "city": city_convert_vk(user.city),
                 "last_visit_vk_date": user.last_visit_vk_date,
             }
             for user in users
@@ -118,7 +121,6 @@ class VkStorage:
             await session.execute(query)
             await session.commit()
         except Exception as e:
-            print("OSHIBKA EBANY")
             await session.rollback()
             raise e
 
@@ -179,6 +181,49 @@ class VkStorage:
         )
         res = await session.scalars(query)
         return [VkGroupUser.model_validate(r) for r in res]
+
+
+
+    @inject_session
+    async def get_users_by_parser_request_id_filtered(
+        self,
+        session: AsyncSession,
+        parser_request_id: int,
+        filtered_city: str,
+        filtered_year_from: str,
+        filtered_year_to: str,
+    ) -> Sequence[VkGroupUser]:
+        if filtered_city != "all_cities":
+            print(filtered_city)
+            query = (
+                select(VkGroupUserDb)
+                .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
+                .where(
+                    and_(VkGroupDb.parser_request_id == parser_request_id),
+                    (VkGroupUserDb.city == filtered_city),
+                    (VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y')),
+                    (VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", '%d.%m.%Y')),
+                )
+                .order_by(VkGroupUserDb.created_at)
+            )
+            res = await session.scalars(query)
+            print(res)
+            return [VkGroupUser.model_validate(r) for r in res]
+        else:
+            query = (
+                select(VkGroupUserDb)
+                .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
+                .where(
+                    and_(
+                        VkGroupDb.parser_request_id == parser_request_id,
+                        VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y'),
+                        VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", '%d.%m.%Y'),
+                    )
+                )
+                .order_by(VkGroupUserDb.created_at)
+            )
+            res = await session.scalars(query)
+            return [VkGroupUser.model_validate(r) for r in res]
 
     @inject_session
     async def add_accounts_bd(
@@ -245,3 +290,19 @@ def not_none(value: NType | None) -> NType:
     if value is None:
         raise ValueError
     return value
+
+def sex_convert_vk(sex) -> str:
+    try:
+        if sex == 1:
+            return "Ж"
+        elif sex == 2:
+            return "М"
+    except Exception as e:
+        print("sex", e)
+
+
+def city_convert_vk(city) -> str:
+    try:
+        return city['title']
+    except Exception as e:
+        print("city", e)
