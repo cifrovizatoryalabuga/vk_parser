@@ -195,6 +195,8 @@ class VkStorage:
     ) -> Sequence[VkGroupUser]:
         if filtered_city != "all_cities":
             print(filtered_city)
+            if filtered_city == "None":
+                filtered_city = None
             query = (
                 select(VkGroupUserDb)
                 .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
