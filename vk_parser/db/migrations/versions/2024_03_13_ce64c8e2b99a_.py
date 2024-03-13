@@ -1,8 +1,8 @@
-"""add sex+city users
+"""empty message
 
-Revision ID: fccd8f48ec0c
+Revision ID: ce64c8e2b99a
 Revises: c0a72d105f89
-Create Date: 2024-03-10 18:22:57.895564
+Create Date: 2024-03-13 17:58:54.642015
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'fccd8f48ec0c'
+revision: str = 'ce64c8e2b99a'
 down_revision: Union[str, None] = 'c0a72d105f89'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
