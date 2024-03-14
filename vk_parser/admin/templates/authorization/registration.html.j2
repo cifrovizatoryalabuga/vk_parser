@@ -1,0 +1,68 @@
+{% extends "./base.html.j2" %}
+{% import "./macros/utils.html.j2" as utils%}
+{% block title %}Статус отправки сообщений{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <div class="col s12">
+        <h2 class="light-blue-text darken-3">Регистрация</h2>
+    </div>
+    {% if error %}
+    <div class="col s12 m6">
+        <div class="card red accent-2">
+            <div class="card-content white-text">
+                <span class="card-title">Ошибка!</span>
+                <p>Проверьте правильность заполнения формы</p>
+            </div>
+        </div>
+    </div>
+    {% elif dublicate %}
+    <div class="col s12 m6">
+        <div class="card red accent-2">
+            <div class="card-content white-text">
+                <span class="card-title">Ошибка!</span>
+                <p>Такой пользователь уже существует!</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="row justify-content-center">
+        <div class="col-md-4"> <!-- Уменьшаем ширину блока -->
+            <form method="post" onsubmit="return validatePasswords()"> <!-- Добавляем обработчик события onSubmit -->
+                <div class="form-group mb-3"> <!-- Добавляем нижний отступ -->
+                    <label for="Login" class="text-uppercase fw-bold">Логин</label>
+                    <input name="login" type="text" class="form-control" id="Login" aria-describedby="LoginHelp" placeholder="Логин">
+                </div>
+                <div class="row">
+                    <label for="login">Формат(И_Ф) на латинице: John_Smith</label>
+                </div>
+                <div class="form-group mb-3"> <!-- Добавляем нижний отступ -->
+                    <label for="Password1" class="text-uppercase fw-bold">Пароль</label>
+                    <input name="password" type="password" class="form-control" id="Password1" placeholder="Пароль">
+                </div>
+                <div class="form-group mb-3"> <!-- Добавляем нижний отступ -->
+                    <input name="password2" type="password" class="form-control" id="Password2" placeholder="Повторите пароль">
+                </div>
+                <div class="row">
+                    <label for="password">Пароль больше 6 символов на латинице: qwerty123</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function validatePasswords() {
+        var password1 = document.getElementById("Password1").value;
+        var password2 = document.getElementById("Password2").value;
+
+        if (password1 !== password2) {
+            alert("Пароли не совпадают!");
+            return false; // Останавливаем отправку формы
+        }
+        return true; // Продолжаем отправку формы
+    }
+</script>
+
+{% endblock content %}

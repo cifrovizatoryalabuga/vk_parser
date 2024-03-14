@@ -212,6 +212,19 @@
 {% block scripts %}
 {{ super() }}
 
+<style>
+  .delete-icon {
+      color: black; /* Черный цвет по умолчанию */
+      transition: color 0.3s ease; /* Плавное изменение цвета за 0.3 секунды */
+  }
+
+  .delete-icon:hover {
+      color: red; /* Красный цвет при наведении */
+      cursor: pointer; /* Изменение курсора на указатель при наведении */
+  }
+
+</style>
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     var elems = document.querySelectorAll('select');
@@ -239,6 +252,8 @@
       .then(response => {
         // Обработка ответа от сервера
         console.log(response);
+        // Обновление страницы после успешного удаления
+        location.reload();
       })
       .catch(error => {
         // Обработка ошибки

@@ -12,6 +12,7 @@ from vk_parser.generals.models.pagination import PaginationParams
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.ping import PingStorage
 from vk_parser.storages.vk import VkStorage
+from vk_parser.storages.authorization import AuthorizationStorage
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +37,10 @@ class DependenciesMixin(BaseHttpMixin):
     @property
     def vk_storage(self) -> VkStorage:
         return self.request.app["vk_storage"]
+
+    @property
+    def auth_storage(self) -> AuthorizationStorage:
+        return self.request.app["auth_storage"]
 
     @property
     def amqp_master(self) -> Master:
@@ -86,4 +91,3 @@ class CreateMixin(BaseHttpMixin):
         except ValidationError:
             log.warning("Incorrect form data: %s", data, exc_info=True)
             return None
-        

@@ -22,6 +22,8 @@ from vk_parser.admin.handlers.delete_user_from_parser import (
 from vk_parser.admin.handlers.parser_request_create import ParserRequestCreateHandler
 from vk_parser.admin.handlers.parser_request_detail import ParserRequestDetailHandler
 from vk_parser.admin.handlers.parser_request_list import ParserRequestListHandler
+from vk_parser.admin.handlers.views.registration_user import RegistrationUserTemplateHandler
+from vk_parser.admin.handlers.views.login_user import LoginUserTemplateHandler
 from vk_parser.admin.handlers.ping import PingHandler
 from vk_parser.admin.handlers.views.index import IndexTemplateHandler
 from vk_parser.admin.handlers.views.parser_request_accounts import (
@@ -46,6 +48,7 @@ from vk_parser.admin.handlers.views.vk_group_user_download_csv import (
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.ping import PingStorage
 from vk_parser.storages.vk import VkStorage
+from vk_parser.storages.authorization import AuthorizationStorage
 from vk_parser.utils.filters import datetime_format
 
 log = logging.getLogger(__name__)
@@ -63,12 +66,14 @@ class Admin(AIOHTTPService):
         "ping_storage",
         "vk_storage",
         "amqp_master",
+        "auth_storage",
     )
 
     parser_request_storage: ParserRequestStorage
     ping_storage: PingStorage
     vk_storage: VkStorage
     amqp_master: Master
+    auth_storage: AuthorizationStorage
 
     ROUTES: HandlersType = (
         (hdrs.METH_GET, "/api/v1/ping/", PingHandler, "ping"),
@@ -181,6 +186,24 @@ class Admin(AIOHTTPService):
             "/admin/delete_user/",
             DeleteUserFromParserBDHandler,
             "request_user_delete",
+        ),
+        (
+            hdrs.METH_GET,
+            "/admin/registration/",
+            RegistrationUserTemplateHandler,
+            "registration_user",
+        ),
+        (
+            hdrs.METH_POST,
+            "/admin/registration/",
+            RegistrationUserTemplateHandler,
+            "registration_user",
+        ),
+        (
+            hdrs.METH_GET,
+            "/admin/login/",
+            LoginUserTemplateHandler,
+            "login_user",
         ),
     )
 
