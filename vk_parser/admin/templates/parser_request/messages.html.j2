@@ -30,7 +30,7 @@
               <tbody>
                 {% for item in pagination.items %}
                 <tr class="waves-efffect">
-                  <td>{{ item.message }}</td>
+                  <td>{{ item.message|replace('\n', '<br>') }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -52,9 +52,9 @@
             {%endwith%}
             <form class="col s12" method="post">
                 <div class="row">
-                <div class="input-field col s6">
+                <div class="input-field col s7">
                     <i class="material-icons prefix">face</i>
-                    <input name="messages" id="messages" type="text" class="validate">
+                    <textarea name="messages" id="messages" class="materialize-textarea validate"></textarea>
                     <label for="messages">Сообщения для рассылки</label>
                 </div>
                 </div>

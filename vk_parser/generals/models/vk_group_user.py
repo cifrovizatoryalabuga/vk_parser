@@ -8,8 +8,10 @@ class VkGroupUser(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    parser_request_id: int
     vk_group_id: int
     vk_user_id: int
+    photo_100: str | None
     raw_data: dict[str, Any]
     birth_date: date | None
     first_name: str | None

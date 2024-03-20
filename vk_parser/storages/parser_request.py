@@ -69,8 +69,9 @@ class ParserRequestStorage(PaginationMixin):
     async def delete_messages(
         self,
         session: AsyncSession,
+        user_id: int,
     ) -> None:
-        query = delete(MessagesDb)
+        query = delete(MessagesDb).where(MessagesDb.user_id == user_id)
         await session.execute(query)
         await session.commit()
 
@@ -78,10 +79,25 @@ class ParserRequestStorage(PaginationMixin):
     async def delete_accounts(
         self,
         session: AsyncSession,
+        user_id: int,
     ) -> None:
-        query = delete(SendAccountsDb)
+        query = delete(SendAccountsDb).where(SendAccountsDb.user_id == user_id)
         await session.execute(query)
         await session.commit()
+
+    async def admin_pagination_by_user(
+        self,
+        page: int,
+        page_size: int,
+        user_id: int,
+    ) -> PaginationResponse[DetailParserRequest]:
+        query = select(ParserRequestDb).where(ParserRequestDb.user_id == user_id).order_by(ParserRequestDb.created_at.desc())
+        return await self._paginate(
+            query=query,
+            page=page,
+            page_size=page_size,
+            model_type=DetailParserRequest,
+        )
 
     async def admin_pagination(
         self,
@@ -96,12 +112,30 @@ class ParserRequestStorage(PaginationMixin):
             model_type=DetailParserRequest,
         )
 
+    async def admin_pagination_filtered(
+        self,
+        page: int,
+        page_size: int,
+        user_id: str,
+    ) -> PaginationResponse[DetailParserRequest]:
+        if user_id != 'all_parsers':
+            query = select(ParserRequestDb).where(ParserRequestDb.user_id == user_id).order_by(ParserRequestDb.created_at.desc())
+        else:
+            query = select(ParserRequestDb).order_by(ParserRequestDb.created_at.desc())
+        return await self._paginate(
+            query=query,
+            page=page,
+            page_size=page_size,
+            model_type=DetailParserRequest,
+        )
+
     async def admin_pagination_accounts(
         self,
         page: int,
         page_size: int,
+        user_id: int,
     ) -> PaginationResponse[SendAccounts]:
-        query = select(SendAccountsDb).order_by(SendAccountsDb.created_at.desc())
+        query = select(SendAccountsDb).where(SendAccountsDb.user_id == user_id).order_by(SendAccountsDb.created_at.desc())
         return await self._paginate(
             query=query,
             page=page,
@@ -178,8 +212,9 @@ class ParserRequestStorage(PaginationMixin):
         self,
         page: int,
         page_size: int,
+        user_id: int,
     ) -> PaginationResponse[Messages]:
-        query = select(MessagesDb).order_by(MessagesDb.created_at.desc())
+        query = select(MessagesDb).where(MessagesDb.user_id == user_id).order_by(MessagesDb.created_at.desc())
         return await self._paginate(
             query=query,
             page=page,
@@ -202,11 +237,13 @@ class ParserRequestStorage(PaginationMixin):
         self,
         session: AsyncSession,
         input_data: Mapping[str, Any],
+        user_id: str,
     ) -> DetailParserRequest | None:
         query = (
             insert(ParserRequestDb)
             .values(
                 input_data=input_data,
+                user_id=user_id,
             )
             .returning(ParserRequestDb)
         )
@@ -340,8 +377,9 @@ class ParserRequestStorage(PaginationMixin):
     async def get_random_account(
         self,
         session: AsyncSession,
+        user_id: int,
     ) -> Sequence[SendAccountsDb]:
-        query = select(SendAccountsDb)
+        query = select(SendAccountsDb).where(SendAccountsDb.user_id == user_id)
         result = await session.execute(query)
         return result.scalars().all()
 
@@ -349,8 +387,9 @@ class ParserRequestStorage(PaginationMixin):
     async def get_random_message(
         self,
         session: AsyncSession,
+        user_id: int,
     ) -> Sequence[MessagesDb]:
-        query = select(MessagesDb)
+        query = select(MessagesDb).where(MessagesDb.user_id == user_id)
         result = await session.execute(query)
         return result.scalars().all()
 

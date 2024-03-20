@@ -4,18 +4,20 @@ from aiomisc import timeout
 from vk_parser.admin.handlers.base import DependenciesMixin, ListMixin
 
 
-class DeleteUserFromParserBDHandler(web.View, DependenciesMixin, ListMixin):
+class ChangeRoleDBHandler(web.View, DependenciesMixin, ListMixin):
     @timeout(5)
     async def post(self) -> web.Response:
         try:
             data = await self.request.json()
             user_id = data["userId"]
-            parser_id = data["parserId"]
+            role = data["role"]
 
-            await self.vk_storage.remove_users_by_id(id=int(user_id), parser_request_id=int(parser_id))
+            print(user_id, role)
+
+            await self.auth_storage.change_role(user_id=int(user_id), role=role)
 
             return web.Response(
-                text="<script>window.location.replace('/admin/parsers/{parser_id}/');</script>",
+                text="<script>window.location.replace('/admin/all_users/');</script>",
                 content_type="text/html",
                 status=200,
             )

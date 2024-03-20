@@ -5,70 +5,50 @@
 {% block content %}
 
 <div class="container">
-    <div class="section">
-      <div class="row">
-        <div class="col s12">
-          <h2 class="light-blue-text darken-3">Список сообщений для рассылки</h2>
-        </div>
-        <div class="col s12">
-          <p>Всего пользователей : {{ pagination.meta.total }} </p>
-        </div>
-
-      </div>
-
-      <div class="row">
-        <div class="col s9">
-          <a href="/api/v1/delete_messages_db/" class="red waves-effect waves-light btn-small"><i class="material-icons left">cloud</i>Удалить сообщения</a>
-        </div>
-          <div class="col s12">
-              <table class="striped highlight">
-                <thead>
-                  <tr>
-                      <th>Сообщения</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {% for item in pagination.items %}
-                  <tr class="waves-efffect">
-                    <td>{{ item.login }} : {{ item.password }} : {{ item.created_at }} : {{ item.created_at }}: {{ item.role }}</td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            <ul class="pagination">
-              {% with page = pagination.meta.page, page_size = pagination.meta.page_size, pages = pagination.meta.pages %}
-              {% if page != 1 %}
-              <li class="waves-effect">
-                <a href="/admin/messages/?page_size={{ page_size }}&page={{ page - 1 }}">
-                <i class="material-icons">chevron_left</i></a>
-                </li>
-              {%endif%}
-              <li class="active"><a href="#!">{{ page }}</a></li>
-              {% if page != pages%}
-              <li class="waves-effect">
-              <a href="/admin/messages/?page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
-              </li>
-              {%endif%}
-              {%endwith%}
-              <form class="col s12" method="post">
-                  <div class="row">
-                  <div class="input-field col s6">
-                      <i class="material-icons prefix">face</i>
-                      <input name="messages" id="messages" type="text" class="validate">
-                      <label for="messages">Сообщения для рассылки</label>
-                  </div>
-                  </div>
-                  <button class="btn blue waves-effect waves-light" type="submit">Загрузить сообщения</button>
-              </form>
-              <div class="row">
-                  <label for="accounts">Сообщения не больше 1024 символов, для загрузки нескольких - разделитель "{}"</label>
-              </div>
-            </ul>
+  <div class="col s12">
+      <h2 class="light-blue-text darken-3">Авторизация</h2>
+  </div>
+  {% if no_user %}
+  <div class="col s12 m6">
+      <div class="card red accent-2">
+          <div class="card-content white-text">
+              <span class="card-title">Ошибка!</span>
+              <p>Такого юзера не существует!</p>
           </div>
       </div>
-
-    </div>
   </div>
+  {% endif %}
+  {% if no_role %}
+  <div class="col s12 m6">
+      <div class="card red accent-2">
+          <div class="card-content white-text">
+              <span class="card-title">Ошибка!</span>
+              <p>У вас ещё нет прав доступа! Обрптитесь к ответственному</p>
+          </div>
+      </div>
+  </div>
+  {% endif %}
+  <div class="row justify-content-center">
+      <div class="col-md-4"> <!-- Уменьшаем ширину блока -->
+          <form action="/admin/login/" method="post"> <!-- Добавляем обработчик события onSubmit -->
+              <div class="form-group mb-3"> <!-- Добавляем нижний отступ -->
+                  <label for="Login" class="text-uppercase fw-bold">Логин</label>
+                  <input name="login" type="text" class="form-control" id="Login" aria-describedby="LoginHelp" placeholder="Логин">
+              </div>
+              <div class="row">
+                  <label for="login">Формат(И_Ф) на латинице: John_Smith</label>
+              </div>
+              <div class="form-group mb-3"> <!-- Добавляем нижний отступ -->
+                  <label for="Password1" class="text-uppercase fw-bold">Пароль</label>
+                  <input name="password" type="password" class="form-control" id="Password1" placeholder="Пароль">
+              </div>
+              <div class="row">
+                  <label for="password">Пароль больше 6 символов на латинице: qwerty123</label>
+              </div>
+              <button type="submit" class="btn btn-primary">Войти</button>
+          </form>
+      </div>
+  </div>
+</div>
 
 {% endblock content %}

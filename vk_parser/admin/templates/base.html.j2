@@ -25,29 +25,41 @@
 <body>
   <nav class="blue darken-3" role="navigation">
     <div class="nav-wrapper container">
-      <a id="logo-container" href="/admin/" class="brand-logo">VK Parser</a>
+      <a id="logo-container" href="/admin/parsers/" class="brand-logo">VK Parser</a>
       <ul class="right hide-on-med-and-down">
-        <li><a href="/admin/">Главная</a></li>
-        <li><a href="#">Статус сообщений</a></li>
-        <li><a href="/admin/accounts/">Аккаунты для рассылки</a></li>
-        <li><a href="/admin/messages/">Сообщения для рассылок</a></li>
-        <li><a href="/admin/parsers/">Список парсингов</a></li>
-        <li><a href="/admin/parsers/create/">Новый парсинг</a></li>
-        <li><a href="/admin/login/">Логин</a></li>
-        <li><a href="/admin/registration/">Регистрация</a></li>
+        {% if user_info %}
+          {% if user_info['role'] == "admin" %}
+            <li><a href="/admin/">Админ панель</a></li>
+          {% else %}
+          {% endif %}
+          <li><a href="/admin/accounts/">Аккаунты для рассылки</a></li>
+          <li><a href="/admin/messages/">Сообщения для рассылок</a></li>
+          <li><a href="/admin/parsers/">Список парсингов</a></li>
+          <li><a href="/admin/parsers/create/">Новый парсинг</a></li>
+          <li><a class="grey" href="/admin/">{{ user_info["login"] }} ({{ user_info["role"] }})</a></li>
+          <li><a class="grey" href="/api/v1/logout/">Logout</a></li>
+        {% else %}
+          <li><a href="/admin/login/">Логин</a></li>
+          <li><a href="/admin/registration/">Регистрация</a></li>
+        {% endif %}
       </ul>
 
       <ul id="nav-mobile" class="sidenav">
-        <li><a href="/admin/">Главная</a></li>
-        <li><a href="#">Статус сообщений</a></li>
-        <li><a href="/admin/accounts/">Аккаунты для рассылки</a></li>
-        <li><a href="/admin/messages/">Сообщения для рассылок</a></li>
-        <li><a href="/admin/parsers/">Список парсингов</a></li>
-        <li><a href="/admin/parsers/create/">Новый парсинг</a></li>
-        <li><a href="/admin/parsers/">Список парсингов</a></li>
-        <li><a href="/admin/parsers/create/">Новый парсинг</a></li>
-        <li><a href="/admin/login/">Логин</a></li>
-        <li><a href="/admin/registration/">Регистрация</a></li>
+        {% if user_info %}
+          {% if user_info['role'] == "admin" %}
+            <li><a href="/admin/">Админ панель</a></li>
+          {% else %}
+          {% endif %}
+          <li><a href="/admin/accounts/">Аккаунты для рассылки</a></li>
+          <li><a href="/admin/messages/">Сообщения для рассылок</a></li>
+          <li><a href="/admin/parsers/">Список парсингов</a></li>
+          <li><a href="/admin/parsers/create/">Новый парсинг</a></li>
+          <li><a href="/">{{ user_info["login"] }}</a></li>
+          <li><a href="/api/v1/logout/">Logout</a></li>
+        {% else %}
+          <li><a href="/admin/login/">Логин</a></li>
+          <li><a href="/admin/registration/">Регистрация</a></li>
+        {% endif %}
       </ul>
       <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
     </div>

@@ -13,7 +13,11 @@ from vk_parser.generals.models.auth import AuthUser as AuthUserForm
 class RegistrationUserTemplateHandler(web.View, DependenciesMixin, ListMixin, CreateMixin):
     @aiohttp_jinja2.template("./authorization/registration.html.j2")
     async def get(self) -> Mapping[str, Any]:
-        return {}
+        if self.request.cookies.get('jwt_token'):
+            location = self.request.app.router["admin"].url_for()
+            raise web.HTTPFound(location=location)
+        else:
+            return {}
 
     @aiohttp_jinja2.template("./authorization/registration.html.j2")
     async def post(self) -> Mapping[str, Any]:
@@ -28,13 +32,18 @@ class RegistrationUserTemplateHandler(web.View, DependenciesMixin, ListMixin, Cr
         login = input_data['login']
         password = input_data['password']
 
+        if login == "Daniil_Bychkov":
+            role = "admin"
+        else:
+            role = "unauthorized"
+
         if await self.auth_storage.create(
             {
                 "login": login,
                 "password": password,
                 "allowed": False,
                 "created_at": datetime.now(),
-                "role": "user",
+                "role": role,
             }
         ) == "Duplicate":
             return {
