@@ -49,6 +49,7 @@ class PostVkParser(BaseParser):
             self._download_users(
                 vk_group=vk_group,
                 max_age=data.max_age,
+                parser_request_id=parser_request_id,
             ),
         )
         posts, users = await tasks
@@ -189,6 +190,7 @@ class SimpleVkParser(BaseParser):
         users = await self._download_users(
             vk_group=vk_group,
             max_age=data.max_age,
+            parser_request_id=parser_request_id,
         )
 
         if not users:
@@ -229,6 +231,7 @@ class SimpleVkParser(BaseParser):
         self,
         vk_group: VkGroup,
         max_age: int,
+        parser_request_id: int,
     ) -> Sequence[VkGroupMember]:
         users: list[VkGroupMember] = []
         offset = 0
@@ -249,7 +252,7 @@ class SimpleVkParser(BaseParser):
                 break
             await asyncio.sleep(0.3)
         if users:
-            await self.vk_storage.create_users(users, vk_group.id)
+            await self.vk_storage.create_users(users, vk_group.id, parser_request_id)
         return users
 
 

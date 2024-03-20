@@ -14,6 +14,8 @@ from aiomisc.service.aiohttp import AIOHTTPService
 
 from vk_parser.admin.handlers.add_messages_to_db import AddMessagesToBDHandler
 from vk_parser.admin.handlers.add_users_to_db import AddUsersToBDHandler
+from vk_parser.admin.handlers.change_role import ChangeRoleDBHandler
+from vk_parser.admin.handlers.delete_account import DeleteUserBDHandler
 from vk_parser.admin.handlers.delete_accounts_db import DeleteAccountsBDHandler
 from vk_parser.admin.handlers.delete_messages_db import DeleteMessagesBDHandler
 from vk_parser.admin.handlers.delete_user_from_parser import (
@@ -22,8 +24,10 @@ from vk_parser.admin.handlers.delete_user_from_parser import (
 from vk_parser.admin.handlers.parser_request_create import ParserRequestCreateHandler
 from vk_parser.admin.handlers.parser_request_detail import ParserRequestDetailHandler
 from vk_parser.admin.handlers.parser_request_list import ParserRequestListHandler
+from vk_parser.admin.handlers.views.all_users_panel import AllUsersTemplateHandler
 from vk_parser.admin.handlers.views.registration_user import RegistrationUserTemplateHandler
 from vk_parser.admin.handlers.views.login_user import LoginUserTemplateHandler
+from vk_parser.admin.handlers.logout_user import LogoutUser
 from vk_parser.admin.handlers.ping import PingHandler
 from vk_parser.admin.handlers.views.index import IndexTemplateHandler
 from vk_parser.admin.handlers.views.parser_request_accounts import (
@@ -119,6 +123,12 @@ class Admin(AIOHTTPService):
             DeleteAccountsBDHandler,
             "parser_request_delete_accounts",
         ),
+        (
+            hdrs.METH_GET,
+            "/api/v1/logout/",
+            LogoutUser,
+            "logout_user",
+        ),
         (hdrs.METH_GET, "/", RedirectToAdminHandler, "redirect_to_admin"),
         (hdrs.METH_GET, "/admin/", IndexTemplateHandler, "admin"),
         (
@@ -205,6 +215,30 @@ class Admin(AIOHTTPService):
             LoginUserTemplateHandler,
             "login_user",
         ),
+        (
+            hdrs.METH_POST,
+            "/admin/login/",
+            LoginUserTemplateHandler,
+            "login_user",
+        ),
+        (
+            hdrs.METH_GET,
+            "/admin/all_users/",
+            AllUsersTemplateHandler,
+            "all_users",
+        ),
+        (
+            hdrs.METH_POST,
+            "/admin/delete_account/",
+            DeleteUserBDHandler,
+            "request_account_delete",
+        ),
+        (
+            hdrs.METH_POST,
+            "/admin/change_role/",
+            ChangeRoleDBHandler,
+            "change_role_request",
+        )
     )
 
     async def create_application(self) -> Application:

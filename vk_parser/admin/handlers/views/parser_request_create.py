@@ -4,6 +4,7 @@ from typing import Any
 import aiohttp_jinja2
 from aiohttp import web
 from aiohttp.web_exceptions import HTTPInternalServerError
+import jwt
 
 from vk_parser.admin.handlers.base import CreateMixin, DependenciesMixin
 from vk_parser.generals.enums import ParserTypes, RequestStatus
@@ -16,20 +17,41 @@ from vk_parser.generals.models.parser_request import (
 class ParserRequestCreateTemplateHandler(web.View, DependenciesMixin, CreateMixin):
     @aiohttp_jinja2.template("./parser_request/create.html.j2")
     async def get(self) -> Mapping[str, Any]:
-        return {
-            "ParserTypes": ParserTypes,
-        }
+        jwt_token = self.request.cookies.get('jwt_token')
+        if jwt_token:
+            try:
+                decoded_jwt = jwt.decode(jwt_token, "secret", algorithms=["HS256"])
+            except jwt.ExpiredSignatureError:
+                location = self.request.app.router["logout_user"].url_for()
+                raise web.HTTPFound(location=location)
+
+            return {
+                "user_info": decoded_jwt,
+                "ParserTypes": ParserTypes,
+            }
+        response = web.HTTPFound('/admin/login/')
+        raise response
 
     @aiohttp_jinja2.template("./parser_request/create.html.j2")
     async def post(self) -> Mapping[str, Any]:
         input_data = await self.parse_form(schemas=[ParsePostsVkForm, SimpleVkForm])
+        jwt_token = self.request.cookies.get('jwt_token')
+        if jwt_token:
+            try:
+                decoded_jwt = jwt.decode(jwt_token, "secret", algorithms=["HS256"])
+            except jwt.ExpiredSignatureError:
+                response = web.HTTPFound('/admin/login/')
+                raise response
         if input_data is None:
             return {
                 "error": True,
                 "ParserTypes": ParserTypes,
             }
+
+        user = await self.auth_storage.get_user_by_login(decoded_jwt['login'])
         parser_request = await self.parser_request_storage.create(
             input_data=input_data.model_dump(mode="json"),
+            user_id=user.id,
         )
         if parser_request is None:
             raise HTTPInternalServerError(reason="Can't create parser request")

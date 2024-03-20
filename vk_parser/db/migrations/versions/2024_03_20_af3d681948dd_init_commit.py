@@ -1,8 +1,8 @@
-"""Initial commit
+"""init_commit
 
-Revision ID: 22ee1594f288
+Revision ID: af3d681948dd
 Revises:
-Create Date: 2024-03-14 16:23:50.553850
+Create Date: 2024-03-20 10:47:57.163915
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '22ee1594f288'
+revision: str = 'af3d681948dd'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -33,13 +33,17 @@ def upgrade() -> None:
     )
     op.create_table('messages',
     sa.Column('id', sa.BigInteger(), nullable=False),
-    sa.Column('message', sa.String(length=1024), nullable=False),
+    sa.Column('user_id', sa.BigInteger(), nullable=False),
+    sa.Column('message', sa.Text(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['auth_user.id'], name=op.f('fk__messages__user_id__auth_user'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__messages'))
     )
+    op.create_index(op.f('ix__messages__user_id'), 'messages', ['user_id'], unique=False)
     op.create_table('parser_request',
     sa.Column('id', sa.BigInteger(), nullable=False),
+    sa.Column('user_id', sa.BigInteger(), nullable=False),
     sa.Column('status', postgresql.ENUM('PENDING', 'QUEUED', 'PROCESSING', 'FAILED', 'EMPTY', 'SUCCESSFUL', name='status'), server_default='PENDING', nullable=False),
     sa.Column('input_data', postgresql.JSON(astext_type=sa.Text()), nullable=False),
     sa.Column('result_data', postgresql.JSON(astext_type=sa.Text()), nullable=True),
@@ -47,10 +51,13 @@ def upgrade() -> None:
     sa.Column('error_message', sa.String(length=1024), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['auth_user.id'], name=op.f('fk__parser_request__user_id__auth_user'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__parser_request'))
     )
+    op.create_index(op.f('ix__parser_request__user_id'), 'parser_request', ['user_id'], unique=False)
     op.create_table('send_accounts',
     sa.Column('id', sa.BigInteger(), nullable=False),
+    sa.Column('user_id', sa.BigInteger(), nullable=False),
     sa.Column('login', sa.String(length=1024), nullable=False),
     sa.Column('password', sa.String(length=1024), nullable=False),
     sa.Column('secret_token', sa.String(length=1024), nullable=False),
@@ -60,17 +67,10 @@ def upgrade() -> None:
     sa.Column('expire_timestamp', sa.String(length=1024), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['auth_user.id'], name=op.f('fk__send_accounts__user_id__auth_user'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__send_accounts'))
     )
-    op.create_table('send_messages_detail',
-    sa.Column('id', sa.BigInteger(), nullable=False),
-    sa.Column('status_message', postgresql.ENUM('SENDING', 'QUEUED', 'FAILED', 'SUCCESSFUL', name='status_messages'), server_default='SENDING', nullable=False),
-    sa.Column('success_message', sa.BigInteger(), nullable=False),
-    sa.Column('finished_at', sa.DateTime(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk__send_messages_detail'))
-    )
+    op.create_index(op.f('ix__send_accounts__user_id'), 'send_accounts', ['user_id'], unique=False)
     op.create_table('vk_group',
     sa.Column('id', sa.BigInteger(), nullable=False),
     sa.Column('parser_request_id', sa.BigInteger(), nullable=False),
@@ -101,6 +101,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix__vk_group_post__vk_group_id'), 'vk_group_post', ['vk_group_id'], unique=False)
     op.create_table('vk_group_user',
     sa.Column('id', sa.BigInteger(), nullable=False),
+    sa.Column('parser_request_id', sa.BigInteger(), nullable=False),
     sa.Column('vk_group_id', sa.BigInteger(), nullable=False),
     sa.Column('vk_user_id', sa.BigInteger(), nullable=False),
     sa.Column('raw_data', postgresql.JSON(astext_type=sa.Text()), nullable=False),
@@ -108,10 +109,12 @@ def upgrade() -> None:
     sa.Column('first_name', sa.String(length=1024), nullable=True),
     sa.Column('last_name', sa.String(length=1024), nullable=True),
     sa.Column('sex', sa.String(length=1024), nullable=True),
+    sa.Column('photo_100', sa.String(length=1024), nullable=True),
     sa.Column('city', sa.String(length=1024), nullable=True),
     sa.Column('last_visit_vk_date', sa.Date(), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['parser_request_id'], ['parser_request.id'], name=op.f('fk__vk_group_user__parser_request_id__parser_request'), ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['vk_group_id'], ['vk_group.id'], name=op.f('fk__vk_group_user__vk_group_id__vk_group'), ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id', name=op.f('pk__vk_group_user'))
     )
@@ -119,6 +122,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix__vk_group_user__city'), 'vk_group_user', ['city'], unique=False)
     op.create_index(op.f('ix__vk_group_user__first_name'), 'vk_group_user', ['first_name'], unique=False)
     op.create_index(op.f('ix__vk_group_user__last_name'), 'vk_group_user', ['last_name'], unique=False)
+    op.create_index(op.f('ix__vk_group_user__photo_100'), 'vk_group_user', ['photo_100'], unique=False)
     op.create_index(op.f('ix__vk_group_user__sex'), 'vk_group_user', ['sex'], unique=False)
     # ### end Alembic commands ###
 
@@ -126,6 +130,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
     op.drop_index(op.f('ix__vk_group_user__sex'), table_name='vk_group_user')
+    op.drop_index(op.f('ix__vk_group_user__photo_100'), table_name='vk_group_user')
     op.drop_index(op.f('ix__vk_group_user__last_name'), table_name='vk_group_user')
     op.drop_index(op.f('ix__vk_group_user__first_name'), table_name='vk_group_user')
     op.drop_index(op.f('ix__vk_group_user__city'), table_name='vk_group_user')
@@ -138,9 +143,11 @@ def downgrade() -> None:
     op.drop_index(op.f('ix__vk_group__url'), table_name='vk_group')
     op.drop_index(op.f('ix__vk_group__parser_request_id'), table_name='vk_group')
     op.drop_table('vk_group')
-    op.drop_table('send_messages_detail')
+    op.drop_index(op.f('ix__send_accounts__user_id'), table_name='send_accounts')
     op.drop_table('send_accounts')
+    op.drop_index(op.f('ix__parser_request__user_id'), table_name='parser_request')
     op.drop_table('parser_request')
+    op.drop_index(op.f('ix__messages__user_id'), table_name='messages')
     op.drop_table('messages')
     op.drop_table('auth_user')
     # ### end Alembic commands ###

@@ -1,0 +1,176 @@
+{% extends "./base.html.j2" %}
+{% import "./macros/utils.html.j2" as utils%}
+{% block title %}Статус отпрвки сообщений{% endblock title%}
+
+{% block content %}
+<div class="container">
+    <div class="section">
+        <div class="row">
+            <div class="col s12">
+                <h2 class="light-blue-text darken-3">Список пользователей VkParser</h2>
+            </div>
+            <div class="col s12">
+                <p>Всего пользователей : {{ pagination.meta.total }} </p>
+            </div>
+        </div>
+
+        <div class="row">
+          <div class="col s9">
+            <form action="#" method="get">
+              <div class="row">
+                <div class="input-field col s12">
+                  <select name="user_role" id="userRoleSelect">
+                    <option value="all_roles">Все роли!</option>
+                    {% for role in all_roles %}
+                      <option value="{{ role }}" {% if role == selected_role %}selected{% endif %}>
+                        {% if role == 'admin' %}Администратор
+                        {% elif role == 'user' %}Пользователь
+                        {% elif role == 'unauthorized' %}Неавторизованный
+                        {% endif %}
+                      </option>
+                    {% endfor %}
+                  </select>
+                  <label>Пользователи</label>
+                </div>
+              </div>
+              <button class="btn blue waves-effect waves-light" type="submit">Фильтр
+                <i class="material-icons right">send</i>
+              </button>
+            </form>
+          </div>
+        <br>
+            <div class="col s12">
+                <table class="striped highlight">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Логин</th>
+                            <th>Роль</th>
+                            <th>Сменить роль</th>
+                            <th>Удалить</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in pagination.items %}
+                        <tr class="waves-efffect">
+                            <td>{{ item.id }}</a></td>
+                            <td>{{ item.login }}</a></td>
+                            <td>
+                                <!-- Выпадающий список с ролями -->
+                                <select id="role_select_{{ item.id }}">
+                                    <option value="admin" {% if item.role == 'admin' %}selected{% endif %}>Администратор</option>
+                                    <option value="user" {% if item.role == 'user' %}selected{% endif %}>Пользователь</option>
+                                    <option value="unauthorized" {% if item.role == 'unauthorized' %}selected{% endif %}>Неавторизованный</option>
+                                </select>
+                            </td>
+                            <td>
+                                <!-- Кнопка смены роли -->
+                                <button id="change_role_{{ item.id }}" class="btn waves-effect waves-light" onclick="changeRole('{{ item.id }}', document.getElementById('role_select_{{ item.id }}').value)">Сменить роль</button>
+                            </td>
+                            <td>
+                                <span class="delete-icon" onclick="toggleDelete('{{ item.id }}')">&#10006;</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <ul class="pagination">
+                    {% with page = pagination.meta.page, page_size = pagination.meta.page_size, pages = pagination.meta.pages %}
+                    {% if page != 1 %}
+                    <li class="waves-effect">
+                        <a href="/admin/messages/?page_size={{ page_size }}&page={{ page - 1 }}">
+                            <i class="material-icons">chevron_left</i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="active"><a href="#!">{{ page }}</a></li>
+                    {% if page != pages %}
+                    <li class="waves-effect">
+                        <a href="/admin/messages/?page_size={{ page_size }}&page={{ page + 1 }}">
+                            <i class="material-icons">chevron_right</i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endwith %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+  .delete-icon {
+      color: black; /* Черный цвет по умолчанию */
+      transition: color 0.3s ease; /* Плавное изменение цвета за 0.3 секунды */
+  }
+
+  .delete-icon:hover {
+      color: red; /* Красный цвет при наведении */
+      cursor: pointer; /* Изменение курсора на указатель при наведении */
+  }
+
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var elems = document.querySelectorAll('select');
+      var instances = M.FormSelect.init(elems, {});
+    });
+
+    // Or with jQuery
+
+    $(document).ready(function(){
+      $('select').formSelect();
+    });
+
+    function toggleDelete(userId) {
+      // Отправка данных на сервер
+      fetch('/admin/delete_account/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userId: userId,
+        })
+      })
+      .then(response => {
+        // Обработка ответа от сервера
+        console.log(response);
+        // Обновление страницы после успешного удаления
+        location.reload();
+      })
+      .catch(error => {
+        // Обработка ошибки
+        console.error('Ошибка:', error);
+      });
+  }
+
+  function changeRole(userId, role) {
+    // Отправка данных на сервер
+    fetch('/admin/change_role/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        userId: userId,
+        role: role,
+      })
+    })
+    .then(response => {
+      // Обработка ответа от сервера
+      console.log(response);
+      // Обновление страницы после успешного удаления
+      location.reload();
+    })
+    .catch(error => {
+      // Обработка ошибки
+      console.error('Ошибка:', error);
+    });
+}
+</script>
+
+{% endblock content %}
+

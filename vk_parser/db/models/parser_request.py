@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import BigInteger, DateTime, String
+from sqlalchemy import BigInteger, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -14,6 +14,12 @@ class ParserRequest(TimestampMixin, Base):
     """Запрос на парсинг"""
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("auth_user.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     status: Mapped[RequestStatus] = mapped_column(
         make_pg_enum(
             RequestStatus,

@@ -12,6 +12,13 @@ class VkGroupUser(TimestampMixin, Base):
     """Данные пользователя в определенной группе ВК"""
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+
+    parser_request_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("parser_request.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
     vk_group_id: Mapped[int] = mapped_column(
         BigInteger,
         ForeignKey("vk_group.id", ondelete="CASCADE"),
@@ -27,6 +34,9 @@ class VkGroupUser(TimestampMixin, Base):
         String(1024), nullable=True, index=True
     )
     sex: Mapped[str | None] = mapped_column(
+        String(1024), nullable=True, index=True
+    )
+    photo_100: Mapped[str | None] = mapped_column(
         String(1024), nullable=True, index=True
     )
     city: Mapped[str | None] = mapped_column(

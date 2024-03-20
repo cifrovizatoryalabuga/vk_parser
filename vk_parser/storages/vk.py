@@ -77,10 +77,13 @@ class VkStorage:
         session: AsyncSession,
         users: Sequence[VkGroupMember],
         group_id: int,
+        parser_request_id: int,
     ) -> None:
         query = insert(VkGroupUserDb)
         insert_data = [
             {
+                "parser_request_id": parser_request_id,
+                "photo_100": show_photo(user.photo_100),
                 "vk_group_id": group_id,
                 "vk_user_id": user.id,
                 "raw_data": user.model_dump(mode="json"),
@@ -113,10 +116,12 @@ class VkStorage:
         await session.commit()
 
     @inject_session
-    async def remove_users_by_id(self, session: AsyncSession, id: int) -> None:
+    async def remove_users_by_id(self, session: AsyncSession, id: int, parser_request_id: int) -> None:
         try:
             query = delete(VkGroupUserDb).where(
+                and_(
                 VkGroupUserDb.vk_user_id == id,
+                VkGroupUserDb.parser_request_id == parser_request_id)
             )
             await session.execute(query)
             await session.commit()
@@ -180,6 +185,7 @@ class VkStorage:
             .order_by(VkGroupUserDb.created_at)
         )
         res = await session.scalars(query)
+        print(res)
         return [VkGroupUser.model_validate(r) for r in res]
 
 
@@ -229,11 +235,12 @@ class VkStorage:
 
     @inject_session
     async def add_accounts_bd(
-        self, session: AsyncSession, users: Sequence[str]
+        self, session: AsyncSession, users: Sequence[str], user_id: int,
     ) -> None:
         query = insert(SendAccountsDb)
         insert_data = [
             {
+                "user_id": user_id,
                 "login": user.split(":")[0],
                 "password": user.split(":")[1],
                 "secret_token": user.split(":")[2],
@@ -250,14 +257,15 @@ class VkStorage:
 
     @inject_session
     async def add_messages_bd(
-        self, session: AsyncSession, users: Sequence[str]
+        self, session: AsyncSession, messages: Sequence[str], user_id: int,
     ) -> None:
         query = insert(MessagesDb)
         insert_data = [
             {
-                "message": user,
+                "user_id": user_id,
+                "message": message,
             }
-            for user in users
+            for message in messages
         ]
         try:
             await session.execute(query, insert_data)
@@ -308,3 +316,8 @@ def city_convert_vk(city) -> str:
         return city['title']
     except Exception as e:
         print("city", e)
+
+def show_photo(photo):
+    print(photo)
+    print(type(photo))
+    return photo
