@@ -176,14 +176,15 @@ class ParserRequestStorage(PaginationMixin):
                 print(filtered_city)
             if filtered_city == "None":
                 filtered_city = None
+            print('ITS TRUE')
             query = (
                 select(VkGroupUserDb)
                 .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
-                .where(
-                    and_(VkGroupDb.parser_request_id == parser_request_id),
-                    (VkGroupUserDb.city == filtered_city),
-                    (VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y')),
-                    (VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", '%d.%m.%Y')),
+                .filter(
+                    (VkGroupDb.parser_request_id == parser_request_id)&
+                    (VkGroupUserDb.city == filtered_city)&
+                    (VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y'))&
+                    (VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", '%d.%m.%Y'))
                 )
                 .order_by(VkGroupUserDb.created_at)
             )
@@ -192,12 +193,10 @@ class ParserRequestStorage(PaginationMixin):
             query = (
                 select(VkGroupUserDb)
                 .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
-                .where(
-                    and_(
-                        VkGroupDb.parser_request_id == parser_request_id,
-                        VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y'),
-                        VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", '%d.%m.%Y'),
-                    )
+                .filter(
+                    (VkGroupDb.parser_request_id == parser_request_id)&
+                    (VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y'))&
+                    (VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", '%d.%m.%Y'))
                 )
                 .order_by(VkGroupUserDb.created_at)
             )

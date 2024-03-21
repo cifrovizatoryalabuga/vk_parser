@@ -24,7 +24,6 @@
             <table class="striped highlight">
           <thead>
             <tr>
-                <th>User_ID</th>
                 <th>ID</th>
                 <th>Тип парсинга</th>
                 <th>Статус</th>
@@ -37,7 +36,6 @@
           <tbody>
             {% for item in pagination.items %}
             <tr class="waves-efffect">
-              <td><a href="/admin/parsers/{{ item.id }}/">{{ item.user_id }}</a></td>
               <td><a href="/admin/parsers/{{ item.id }}/">{{ item.id }}</a></td>
               <td><a href="/admin/parsers/{{ item.id }}/">{{ item.parser_type }}</a></td>
               <td><a href="/admin/parsers/{{ item.id }}/">{{ utils.badge(item.status) }}</span></a></td>

@@ -185,7 +185,6 @@ class VkStorage:
             .order_by(VkGroupUserDb.created_at)
         )
         res = await session.scalars(query)
-        print(res)
         return [VkGroupUser.model_validate(r) for r in res]
 
 
