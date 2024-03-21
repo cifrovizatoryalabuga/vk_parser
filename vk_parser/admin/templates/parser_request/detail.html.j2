@@ -146,60 +146,27 @@
         </table>
         <ul class="pagination">
           {% with page = pagination.meta.page, page_size = pagination.meta.page_size, pages = pagination.meta.pages %}
-            {% if pages <= 5 %}
               {% if page != 1 %}
               <li class="waves-effect">
-                <a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">
-                <i class="material-icons">chevron_left</i></a>
-                </li>
-              {%endif%}
-              {% if page == 1 %}
-              <li class="active"><a href="#!">{{ page }}</a></li>
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
-              {% elif page == pages %}
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
-              <li class="active"><a href="#!">{{ page }}</a></li>
-              {% elif page > 1 %}
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
-              <li class="active"><a href="#!">{{ page }}</a></li>
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
-              {%endif%}
-              {% if page != pages%}
-              <li class="waves-effect">
-              <a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
+                <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&page_size={{ page_size }}&page={{ page - 1 }}"><i class="material-icons">chevron_left</i></a>
               </li>
               {%endif%}
-            {% elif pages > 5 %}
-              {% if page != 1 %}
-                <li class="waves-effect">
-                  <a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">
-                  <i class="material-icons">chevron_left</i></a>
-                </li>
-              {%endif%}
               {% if page == 1 %}
               <li class="active"><a href="#!">{{ page }}</a></li>
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 2 }}">{{ page + 2 }}</a></li>
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 3 }}">{{ page + 3 }}</a></li>
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 4 }}">{{ page + 4 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
               {% elif page == pages %}
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 4 }}">{{ page - 4 }}</a></li>
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 3 }}">{{ page - 3 }}</a></li>
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 2 }}">{{ page - 2 }}</a></li>
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
               <li class="active"><a href="#!">{{ page }}</a></li>
               {% elif page > 1 %}
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
               <li class="active"><a href="#!">{{ page }}</a></li>
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
               {%endif%}
               {% if page != pages%}
-                <li class="waves-effect">
-                  <a href="/admin/parsers/{{ parser_request.id }}/?page_size={{ page_size }}&page={{ page + 1 }}">
-                  <i class="material-icons">chevron_right</i></a>
-                </li>
+              <li class="waves-effect">
+              <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
+              </li>
               {%endif%}
-            {% endif %}
           {%endwith%}
         </ul>
         {% endif %}

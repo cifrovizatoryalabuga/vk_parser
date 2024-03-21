@@ -55,6 +55,7 @@ class VkGroupMember(BaseModel):
     last_seen: VkLastSeen | None = None
     sex: int | None = Field(alias="sex", default=None)
     city: dict | None = Field(alias="city", default=None)
+    university: dict | None = Field(alias="university", default=None)
     photo_100: str | None = Field(alias="photo_100", default="https://vk.com/images/camera_100.png")
 
     def in_age_range(self, max_age: int) -> bool:
@@ -224,7 +225,7 @@ class Vk(BaseHttpClient):
     )
 
     DEFAULT_FIELDS_GROUPS_GET_BY_ID: ClassVar[Sequence[str]] = ("members_count", "wall")
-    DEFAULT_FIELDS_GROUPS_GET_MEMBERS: ClassVar[Sequence[str]] = ("bdate", "last_seen", "sex", "city", "photo_100")
+    DEFAULT_FIELDS_GROUPS_GET_MEMBERS: ClassVar[Sequence[str]] = ("bdate", "last_seen", "sex", "city", "photo_100", "university")
 
     def __init__(
         self,

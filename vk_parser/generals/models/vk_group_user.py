@@ -17,5 +17,6 @@ class VkGroupUser(BaseModel):
     first_name: str | None
     last_name: str | None
     sex: str | None
+    university: dict | None
     city: str | None
     last_visit_vk_date: date | None

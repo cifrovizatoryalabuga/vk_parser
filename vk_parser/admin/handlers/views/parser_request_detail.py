@@ -27,6 +27,7 @@ class UserRow:
     last_name: str | None
     birth_date: date | None
     sex: int | None
+    university: dict | None
     photo_100: str | None
     city: dict | None
     last_visit_vk_date: date | None
@@ -47,6 +48,7 @@ class ParserRequestDetailTemplateHandler(
             "from_user_year": self.request.query.get("from_user_year", None),
             "to_user_year": self.request.query.get("to_user_year", None)
         }
+        print(response_data)
         parser_request = await self.parser_request_storage.get_detail(
             id_=parser_request_id,
         )
@@ -81,6 +83,7 @@ class ParserRequestDetailTemplateHandler(
                         first_name=user.first_name,
                         last_name=user.last_name,
                         sex=user.sex,
+                        university = user.university,
                         photo_100=user.photo_100,
                         city=user.city,
                         birth_date=user.birth_date,
@@ -95,16 +98,28 @@ class ParserRequestDetailTemplateHandler(
                 raise web.HTTPFound(location=location)
 
         elif parser_request.parser_type == ParserTypes.VK_SIMPLE_DOWNLOAD:
+            params = self._parse()
+
             jwt_token = self.request.cookies.get('jwt_token')
+            print(response_data)
             if jwt_token:
                 try:
                     decoded_jwt = jwt.decode(jwt_token, "secret", algorithms=["HS256"])
                 except jwt.ExpiredSignatureError:
                     location = self.request.app.router["logout_user"].url_for()
                     raise web.HTTPFound(location=location)
+
                 if response_data["city"] and response_data["from_user_year"] and response_data["to_user_year"]:
                     users = await self.vk_storage.get_users_by_parser_request_id_filtered(
                         parser_request_id,
+                        filtered_city=response_data['city'],
+                        filtered_year_from=response_data['from_user_year'],
+                        filtered_year_to=response_data['to_user_year'],
+                    )
+                    pagination = await self.parser_request_storage.admin_pagination_parsed_users_filtered(
+                        parser_request_id,
+                        page=params.page,
+                        page_size=params.page_size,
                         filtered_city=response_data['city'],
                         filtered_year_from=response_data['from_user_year'],
                         filtered_year_to=response_data['to_user_year'],
@@ -113,6 +128,11 @@ class ParserRequestDetailTemplateHandler(
                     users = await self.vk_storage.get_users_by_parser_request_id(
                         parser_request_id,
                     )
+                    pagination = await self.parser_request_storage.admin_pagination_parsed_users(
+                        parser_request_id,
+                        page=params.page,
+                        page_size=params.page_size,
+                )
                 user_data = []
                 for user in users:
                     row = UserRow(
@@ -120,6 +140,7 @@ class ParserRequestDetailTemplateHandler(
                         first_name=user.first_name,
                         last_name=user.last_name,
                         sex=user.sex,
+                        university = user.university,
                         photo_100=user.photo_100,
                         city=user.city,
                         birth_date=user.birth_date,
@@ -127,13 +148,6 @@ class ParserRequestDetailTemplateHandler(
                     )
                     user_data.append(row)
 
-                params = self._parse()
-
-                pagination = await self.parser_request_storage.admin_pagination_parsed_users(
-                    parser_request_id,
-                    page=params.page,
-                    page_size=params.page_size,
-                )
 
                 return {
                     "user_info": decoded_jwt,

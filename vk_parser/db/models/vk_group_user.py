@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Any
+from typing import Any, Optional
 
 from sqlalchemy import BigInteger, Date, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSON
@@ -40,6 +40,9 @@ class VkGroupUser(TimestampMixin, Base):
         String(1024), nullable=True, index=True
     )
     city: Mapped[str | None] = mapped_column(
+        String(1024), nullable=True, index=True
+    )
+    university: Mapped[dict] = mapped_column(
         String(1024), nullable=True, index=True
     )
     last_visit_vk_date: Mapped[date | None] = mapped_column(Date, nullable=True)
