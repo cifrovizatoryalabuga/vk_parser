@@ -31,7 +31,6 @@ class IndexTemplateHandler(web.View, DependenciesMixin, ListMixin):
             for user in all_users:
                 all_users_data[user.id] = user.login
 
-            print(self.request.query.get('parser'))
 
             response_data = {
                 "parser": self.request.query.get('parser')

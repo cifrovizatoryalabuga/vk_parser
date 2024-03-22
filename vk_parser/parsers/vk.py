@@ -245,6 +245,7 @@ class SimpleVkParser(BaseParser):
                 do_next = False
                 break
             for user in chunk_users.items:
+                print(user.university_name)
                 if user.in_age_range(max_age=max_age):
                     users.append(user)
             offset += len(chunk_users.items)

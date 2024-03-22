@@ -12,7 +12,6 @@ class ChangeRoleDBHandler(web.View, DependenciesMixin, ListMixin):
             user_id = data["userId"]
             role = data["role"]
 
-            print(user_id, role)
 
             await self.auth_storage.change_role(user_id=int(user_id), role=role)
 

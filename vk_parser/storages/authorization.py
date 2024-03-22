@@ -164,7 +164,6 @@ class AuthorizationStorage(PaginationMixin):
                 .order_by(AuthUserDb.created_at)
             )
             res = await session.scalars(query)
-            print(res)
             return [AuthUserDb.model_validate(r) for r in res]
         else:
             query = (

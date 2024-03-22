@@ -27,7 +27,7 @@ class UserRow:
     last_name: str | None
     birth_date: date | None
     sex: int | None
-    university: dict | None
+    university_name: str | None
     photo_100: str | None
     city: dict | None
     last_visit_vk_date: date | None
@@ -48,7 +48,6 @@ class ParserRequestDetailTemplateHandler(
             "from_user_year": self.request.query.get("from_user_year", None),
             "to_user_year": self.request.query.get("to_user_year", None)
         }
-        print(response_data)
         parser_request = await self.parser_request_storage.get_detail(
             id_=parser_request_id,
         )
@@ -83,7 +82,7 @@ class ParserRequestDetailTemplateHandler(
                         first_name=user.first_name,
                         last_name=user.last_name,
                         sex=user.sex,
-                        university = user.university,
+                        university_name=user.university_name,
                         photo_100=user.photo_100,
                         city=user.city,
                         birth_date=user.birth_date,
@@ -101,7 +100,6 @@ class ParserRequestDetailTemplateHandler(
             params = self._parse()
 
             jwt_token = self.request.cookies.get('jwt_token')
-            print(response_data)
             if jwt_token:
                 try:
                     decoded_jwt = jwt.decode(jwt_token, "secret", algorithms=["HS256"])
@@ -109,7 +107,7 @@ class ParserRequestDetailTemplateHandler(
                     location = self.request.app.router["logout_user"].url_for()
                     raise web.HTTPFound(location=location)
 
-                if response_data["city"] and response_data["from_user_year"] and response_data["to_user_year"]:
+                if response_data["city"] and response_data['city'] != 'all_cities' and response_data["from_user_year"] and response_data["to_user_year"]:
                     users = await self.vk_storage.get_users_by_parser_request_id_filtered(
                         parser_request_id,
                         filtered_city=response_data['city'],
@@ -140,7 +138,7 @@ class ParserRequestDetailTemplateHandler(
                         first_name=user.first_name,
                         last_name=user.last_name,
                         sex=user.sex,
-                        university = user.university,
+                        university_name=user.university_name,
                         photo_100=user.photo_100,
                         city=user.city,
                         birth_date=user.birth_date,
@@ -167,6 +165,9 @@ class ParserRequestDetailTemplateHandler(
         except ValueError:
             raise HTTPBadRequest(reason="Invalid ID value")
 
+    def show_arg(self, item):
+        print(item)
+        return item
 
     @aiohttp_jinja2.template("./parser_request/detail.html.j2")  # type: ignore
     async def post(self) -> None:  # type: ignore
@@ -194,7 +195,6 @@ class ParserRequestDetailTemplateHandler(
 
     async def send_messages(self, parser_request_id: int, user_id: int) -> None:
         users = await self.vk_storage.get_users_by_parser_request_id(parser_request_id)
-        print(users)
         async with ClientSession() as session:
             for user in users:
                 try:
@@ -221,6 +221,5 @@ class ParserRequestDetailTemplateHandler(
             },
         ) as response:
             await response.json()
-            print(response)
 
         return None

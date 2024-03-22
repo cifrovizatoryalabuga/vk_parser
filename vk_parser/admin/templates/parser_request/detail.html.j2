@@ -120,6 +120,7 @@
                 <th>Фамилия</th>
                 <th>Имя</th>
                 <th>Пол</th>
+                <th>Университет</th>
                 <th>Город</th>
                 <th>Дата рождения</th>
                 <th>Последний вход в ВК</th>
@@ -134,6 +135,7 @@
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.first_name }}</a></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.last_name }}</span></a></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.sex }}</a></td>
+                <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.university_name }}</a></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.city }}</a></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
@@ -192,7 +194,9 @@
       color: red; /* Красный цвет при наведении */
       cursor: pointer; /* Изменение курсора на указатель при наведении */
   }
-
+  th, td {
+    max-width: 200px; /* Максимальная ширина столбцов */
+  }
 </style>
 
 <script>

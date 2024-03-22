@@ -83,7 +83,7 @@ class VkStorage:
         insert_data = [
             {
                 "parser_request_id": parser_request_id,
-                "photo_100": show_photo(user.photo_100),
+                "photo_100": user.photo_100,
                 "vk_group_id": group_id,
                 "vk_user_id": user.id,
                 "raw_data": user.model_dump(mode="json"),
@@ -91,6 +91,7 @@ class VkStorage:
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "sex": sex_convert_vk(user.sex),
+                "university_name": user.university_name,
                 "city": city_convert_vk(user.city),
                 "last_visit_vk_date": user.last_visit_vk_date,
             }
@@ -199,7 +200,6 @@ class VkStorage:
         filtered_year_to: str,
     ) -> Sequence[VkGroupUser]:
         if filtered_city != "all_cities":
-            print(filtered_city)
             if filtered_city == "None":
                 filtered_city = None
             query = (
@@ -214,7 +214,6 @@ class VkStorage:
                 .order_by(VkGroupUserDb.created_at)
             )
             res = await session.scalars(query)
-            print(res)
             return [VkGroupUser.model_validate(r) for r in res]
         else:
             query = (
@@ -307,16 +306,15 @@ def sex_convert_vk(sex) -> str:
         elif sex == 2:
             return "М"
     except Exception as e:
-        print("sex", e)
+        pass
 
 
 def city_convert_vk(city) -> str:
     try:
         return city['title']
     except Exception as e:
-        print("city", e)
+        pass
 
-def show_photo(photo):
-    print(photo)
-    print(type(photo))
-    return photo
+def show_item(item):
+    print(item)
+    return item
