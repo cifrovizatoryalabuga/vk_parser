@@ -36,13 +36,13 @@ class VkGroupUser(TimestampMixin, Base):
     sex: Mapped[str | None] = mapped_column(
         String(1024), nullable=True, index=True
     )
+    university_name: Mapped[str | None] = mapped_column(
+        String(1024), nullable=True, index=True
+    )
     photo_100: Mapped[str | None] = mapped_column(
         String(1024), nullable=True, index=True
     )
     city: Mapped[str | None] = mapped_column(
-        String(1024), nullable=True, index=True
-    )
-    university: Mapped[dict] = mapped_column(
         String(1024), nullable=True, index=True
     )
     last_visit_vk_date: Mapped[date | None] = mapped_column(Date, nullable=True)

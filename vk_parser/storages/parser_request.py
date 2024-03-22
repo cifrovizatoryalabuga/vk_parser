@@ -172,11 +172,9 @@ class ParserRequestStorage(PaginationMixin):
         page_size: int,
     ) -> PaginationResponse[VkGroupUser]:
         if filtered_city and filtered_year_from and filtered_year_to:
-            if filtered_city != "all_cities":
-                print(filtered_city)
             if filtered_city == "None":
                 filtered_city = None
-            print('ITS TRUE')
+
             query = (
                 select(VkGroupUserDb)
                 .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
@@ -189,7 +187,6 @@ class ParserRequestStorage(PaginationMixin):
                 .order_by(VkGroupUserDb.created_at)
             )
         else:
-            print(2)
             query = (
                 select(VkGroupUserDb)
                 .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
