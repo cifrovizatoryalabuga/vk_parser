@@ -164,4 +164,3 @@ cython_debug/
 pyrightconfig.json
 
 .migrations/
-
