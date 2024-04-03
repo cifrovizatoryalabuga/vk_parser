@@ -24,6 +24,13 @@ class RequestStatus(StrEnum):
 
 
 @unique
+class UserRoles(StrEnum):
+    ADMIN = "admin"
+    USER = "user"
+    UNAUTHORIZED = "unauthorized"
+
+
+@unique
 class SendMessagesTypes(StrEnum):
     MASS_MESSAGES_SENDER = "MASS_MESSAGES_SENDER"
 

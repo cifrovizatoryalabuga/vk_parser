@@ -1,10 +1,9 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Boolean, String, DateTime
+from sqlalchemy import BigInteger, Boolean, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from vk_parser.db.models.base import Base, TimestampMixin
-
 
 
 class AuthUser(TimestampMixin, Base):
