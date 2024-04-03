@@ -27,7 +27,7 @@ services:
     depends_on:
       - db
       - rabbitmq
-    image: andytakker/vk-parser:latest
+    image: dan/vk-parser:latest
     restart: unless-stopped
     entrypoint: python -m vk_parser.admin
     ports:
@@ -48,7 +48,7 @@ services:
       - db
       - rabbitmq
     restart: unless-stopped
-    image: andytakker/vk-parser:latest
+    image: dan/vk-parser:latest
     entrypoint: python -m vk_parser.workers.vk --amqp-queue-name=VK_SIMPLE_DOWNLOAD
     environment:
       APP_VK_API_SECURE_KEY: $VK_API_SECURE_KEY
@@ -66,7 +66,7 @@ services:
       - db
       - rabbitmq
     restart: unless-stopped
-    image: andytakker/vk-parser:latest
+    image: dan/vk-parser:latest
     entrypoint: python -m vk_parser.workers.vk --amqp-queue-name=VK_DOWNLOAD_AND_PARSED_POSTS
     environment:
       APP_VK_API_SECURE_KEY: $VK_API_SECURE_KEY
@@ -78,3 +78,6 @@ services:
       APP_AMQP_PREFETCH_COUNT: $AMQP_PREFETCH_COUNT
       APP_AMQP_RETRY_PAUSE_SECONDS: $AMQP_RETRY_PAUSE_SECONDS
       APP_AMQP_RETRY_COUNT_LIMIT: $AMQP_RETRY_COUNT_LIMIT
+
+volumes:
+  postgres_data:
