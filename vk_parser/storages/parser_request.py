@@ -1,11 +1,10 @@
+import datetime as dt
 import logging
 from asyncio import gather
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
-from operator import and_
 from typing import Any
-import datetime as dt
 
 from aiohttp import web
 from sqlalchemy import ScalarResult, delete, func, insert, select, update
@@ -91,7 +90,11 @@ class ParserRequestStorage(PaginationMixin):
         page_size: int,
         user_id: int,
     ) -> PaginationResponse[DetailParserRequest]:
-        query = select(ParserRequestDb).where(ParserRequestDb.user_id == user_id).order_by(ParserRequestDb.created_at.desc())
+        query = (
+            select(ParserRequestDb)
+            .where(ParserRequestDb.user_id == user_id)
+            .order_by(ParserRequestDb.created_at.desc())
+        )
         return await self._paginate(
             query=query,
             page=page,
@@ -118,8 +121,12 @@ class ParserRequestStorage(PaginationMixin):
         page_size: int,
         user_id: str,
     ) -> PaginationResponse[DetailParserRequest]:
-        if user_id != 'all_parsers':
-            query = select(ParserRequestDb).where(ParserRequestDb.user_id == user_id).order_by(ParserRequestDb.created_at.desc())
+        if user_id != "all_parsers":
+            query = (
+                select(ParserRequestDb)
+                .where(ParserRequestDb.user_id == user_id)
+                .order_by(ParserRequestDb.created_at.desc())
+            )
         else:
             query = select(ParserRequestDb).order_by(ParserRequestDb.created_at.desc())
         return await self._paginate(
@@ -135,7 +142,11 @@ class ParserRequestStorage(PaginationMixin):
         page_size: int,
         user_id: int,
     ) -> PaginationResponse[SendAccounts]:
-        query = select(SendAccountsDb).where(SendAccountsDb.user_id == user_id).order_by(SendAccountsDb.created_at.desc())
+        query = (
+            select(SendAccountsDb)
+            .where(SendAccountsDb.user_id == user_id)
+            .order_by(SendAccountsDb.created_at.desc())
+        )
         return await self._paginate(
             query=query,
             page=page,
@@ -162,7 +173,7 @@ class ParserRequestStorage(PaginationMixin):
             model_type=VkGroupUser,
         )
 
-    async def admin_pagination_parsed_users_filtered(
+    async def admin_pagination_users_filtered(
         self,
         parser_request_id: int,
         filtered_city: str,
@@ -179,10 +190,18 @@ class ParserRequestStorage(PaginationMixin):
                 select(VkGroupUserDb)
                 .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
                 .filter(
-                    (VkGroupDb.parser_request_id == parser_request_id)&
-                    (VkGroupUserDb.city == filtered_city)&
-                    (VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y'))&
-                    (VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", '%d.%m.%Y'))
+                    (VkGroupDb.parser_request_id == parser_request_id)
+                    & (VkGroupUserDb.city == filtered_city)
+                    & (
+                        VkGroupUserDb.birth_date
+                        >= dt.datetime.strptime(
+                            f"01.01.{filtered_year_from}", "%d.%m.%Y"
+                        )
+                    )
+                    & (
+                        VkGroupUserDb.birth_date
+                        <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
+                    )
                 )
                 .order_by(VkGroupUserDb.created_at)
             )
@@ -191,9 +210,17 @@ class ParserRequestStorage(PaginationMixin):
                 select(VkGroupUserDb)
                 .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
                 .filter(
-                    (VkGroupDb.parser_request_id == parser_request_id)&
-                    (VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y'))&
-                    (VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", '%d.%m.%Y'))
+                    (VkGroupDb.parser_request_id == parser_request_id)
+                    & (
+                        VkGroupUserDb.birth_date
+                        >= dt.datetime.strptime(
+                            f"01.01.{filtered_year_from}", "%d.%m.%Y"
+                        )
+                    )
+                    & (
+                        VkGroupUserDb.birth_date
+                        <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
+                    )
                 )
                 .order_by(VkGroupUserDb.created_at)
             )
@@ -210,7 +237,11 @@ class ParserRequestStorage(PaginationMixin):
         page_size: int,
         user_id: int,
     ) -> PaginationResponse[Messages]:
-        query = select(MessagesDb).where(MessagesDb.user_id == user_id).order_by(MessagesDb.created_at.desc())
+        query = (
+            select(MessagesDb)
+            .where(MessagesDb.user_id == user_id)
+            .order_by(MessagesDb.created_at.desc())
+        )
         return await self._paginate(
             query=query,
             page=page,
@@ -389,7 +420,7 @@ class ParserRequestStorage(PaginationMixin):
         result = await session.execute(query)
         return result.scalars().all()
 
-    async def redirector(  # type: ignore
+    async def redirector(
         self,
         url,
     ) -> Exception:

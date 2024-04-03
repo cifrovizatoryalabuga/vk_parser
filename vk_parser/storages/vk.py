@@ -1,9 +1,9 @@
+import datetime as dt
 import logging
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from random import choice
 from typing import Any, TypeVar
-import datetime as dt
 
 import sqlalchemy.dialects.postgresql as postgresql
 from sqlalchemy import and_, cast, delete, insert, not_, select
@@ -117,12 +117,15 @@ class VkStorage:
         await session.commit()
 
     @inject_session
-    async def remove_users_by_id(self, session: AsyncSession, id: int, parser_request_id: int) -> None:
+    async def remove_users_by_id(
+        self, session: AsyncSession, id: int, parser_request_id: int
+    ) -> None:
         try:
             query = delete(VkGroupUserDb).where(
                 and_(
-                VkGroupUserDb.vk_user_id == id,
-                VkGroupUserDb.parser_request_id == parser_request_id)
+                    VkGroupUserDb.vk_user_id == id,
+                    VkGroupUserDb.parser_request_id == parser_request_id,
+                )
             )
             await session.execute(query)
             await session.commit()
@@ -188,8 +191,6 @@ class VkStorage:
         res = await session.scalars(query)
         return [VkGroupUser.model_validate(r) for r in res]
 
-
-
     @inject_session
     async def get_users_by_parser_request_id_filtered(
         self,
@@ -208,8 +209,16 @@ class VkStorage:
                 .where(
                     and_(VkGroupDb.parser_request_id == parser_request_id),
                     (VkGroupUserDb.city == filtered_city),
-                    (VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y')),
-                    (VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", '%d.%m.%Y')),
+                    (
+                        VkGroupUserDb.birth_date
+                        >= dt.datetime.strptime(
+                            f"01.01.{filtered_year_from}", "%d.%m.%Y"
+                        )
+                    ),
+                    (
+                        VkGroupUserDb.birth_date
+                        <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
+                    ),
                 )
                 .order_by(VkGroupUserDb.created_at)
             )
@@ -222,8 +231,14 @@ class VkStorage:
                 .where(
                     and_(
                         VkGroupDb.parser_request_id == parser_request_id,
-                        VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", '%d.%m.%Y'),
-                        VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", '%d.%m.%Y'),
+                        VkGroupUserDb.birth_date
+                        >= dt.datetime.strptime(
+                            f"01.01.{filtered_year_from}", "%d.%m.%Y"
+                        ),
+                        VkGroupUserDb.birth_date
+                        <= dt.datetime.strptime(
+                            f"01.01.{filtered_year_to}", "%d.%m.%Y"
+                        ),
                     )
                 )
                 .order_by(VkGroupUserDb.created_at)
@@ -233,7 +248,10 @@ class VkStorage:
 
     @inject_session
     async def add_accounts_bd(
-        self, session: AsyncSession, users: Sequence[str], user_id: int,
+        self,
+        session: AsyncSession,
+        users: Sequence[str],
+        user_id: int,
     ) -> None:
         query = insert(SendAccountsDb)
         insert_data = [
@@ -255,7 +273,10 @@ class VkStorage:
 
     @inject_session
     async def add_messages_bd(
-        self, session: AsyncSession, messages: Sequence[str], user_id: int,
+        self,
+        session: AsyncSession,
+        messages: Sequence[str],
+        user_id: int,
     ) -> None:
         query = insert(MessagesDb)
         insert_data = [
@@ -276,19 +297,19 @@ class VkStorage:
     async def get_random_account(
         self,
         session: AsyncSession,
-    ) -> str:  # type: ignore
+    ) -> str:
         query = select(SendAccountsDb)
         res = await session.scalars(query)
-        return choice(res)  # type: ignore
+        return choice(res)
 
     @inject_session
     async def get_random_message(
         self,
         session: AsyncSession,
-    ) -> str:  # type: ignore
+    ) -> str:
         query = select(MessagesDb)
         res = await session.scalars(query)
-        return choice(res)  # type: ignore
+        return choice(res)
 
 
 NType = TypeVar("NType", bound=Any)
@@ -299,6 +320,7 @@ def not_none(value: NType | None) -> NType:
         raise ValueError
     return value
 
+
 def sex_convert_vk(sex) -> str:
     try:
         if sex == 1:
@@ -306,14 +328,16 @@ def sex_convert_vk(sex) -> str:
         elif sex == 2:
             return "М"
     except Exception as e:
+        print("SEX EXCEPTION :", e)
         pass
 
 
 def city_convert_vk(city) -> str:
     try:
-        return city['title']
-    except Exception as e:
+        return city["title"]
+    except Exception:
         pass
+
 
 def show_item(item):
     print(item)
