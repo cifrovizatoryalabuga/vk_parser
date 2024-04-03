@@ -185,26 +185,45 @@ class ParserRequestStorage(PaginationMixin):
         if filtered_city and filtered_year_from and filtered_year_to:
             if filtered_city == "None":
                 filtered_city = None
-
-            query = (
-                select(VkGroupUserDb)
-                .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
-                .filter(
-                    (VkGroupDb.parser_request_id == parser_request_id)
-                    & (VkGroupUserDb.city == filtered_city)
-                    & (
-                        VkGroupUserDb.birth_date
-                        >= dt.datetime.strptime(
-                            f"01.01.{filtered_year_from}", "%d.%m.%Y"
+            if filtered_city != "all_cities":
+                query = (
+                    select(VkGroupUserDb)
+                    .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
+                    .filter(
+                        (VkGroupDb.parser_request_id == parser_request_id)
+                        & (VkGroupUserDb.city == filtered_city)
+                        & (
+                            VkGroupUserDb.birth_date
+                            >= dt.datetime.strptime(
+                                f"01.01.{filtered_year_from}", "%d.%m.%Y"
+                            )
+                        )
+                        & (
+                            VkGroupUserDb.birth_date
+                            <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
                         )
                     )
-                    & (
-                        VkGroupUserDb.birth_date
-                        <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
-                    )
+                    .order_by(VkGroupUserDb.created_at)
                 )
-                .order_by(VkGroupUserDb.created_at)
-            )
+            else:
+                query = (
+                    select(VkGroupUserDb)
+                    .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
+                    .filter(
+                        (VkGroupDb.parser_request_id == parser_request_id)
+                        & (
+                            VkGroupUserDb.birth_date
+                            >= dt.datetime.strptime(
+                                f"01.01.{filtered_year_from}", "%d.%m.%Y"
+                            )
+                        )
+                        & (
+                            VkGroupUserDb.birth_date
+                            <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
+                        )
+                    )
+                    .order_by(VkGroupUserDb.created_at)
+                )
         else:
             query = (
                 select(VkGroupUserDb)

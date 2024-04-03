@@ -82,7 +82,6 @@ class ParserRequestDetailTemplateHandler(
 
                 if (
                     response_data["city"]
-                    and response_data["city"] != "all_cities"
                     and response_data["from_user_year"]
                     and response_data["to_user_year"]
                 ):
