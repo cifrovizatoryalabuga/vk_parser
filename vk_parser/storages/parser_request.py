@@ -185,6 +185,7 @@ class ParserRequestStorage(PaginationMixin):
         if filtered_city and filtered_year_from and filtered_year_to:
             if filtered_city == "None":
                 filtered_city = None
+
             if filtered_city != "all_cities":
                 query = (
                     select(VkGroupUserDb)
