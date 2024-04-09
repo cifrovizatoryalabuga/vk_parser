@@ -36,11 +36,11 @@
           </thead>
 
           <tbody>
-            {% for item in pagination.items %}
+            {% for item, conversation in pagination.items %}
             <tr class="waves-efffect">
               <td>{{ item.login }}</td>
               <td>{{ item.password }}</td>
-              <td>0</td>
+              <td>{{ conversation }}</td>
               <td>{{ item.successful_messages }}</td>
               <td>{{ item.error_status }}</td>
               <td>{{ item.user_link }}</td>
