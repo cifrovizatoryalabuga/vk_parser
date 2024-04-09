@@ -43,7 +43,7 @@
               <div class="input-field col s12">
                 <select name="city" id="citySelect">
                     <option value="" disabled>Выберите город</option>
-                    <option value="">Все города!</option>
+                    <option value="all_cities">Все города!</option>
                     {% for city in all_cities %}
                         <option value="{{ city }}"{{ city }}>{{ city }}</option>
                     {% endfor %}
@@ -66,7 +66,7 @@
                 <div class="input-field col s12">
                   <select name="sex" id="sexSelect">
                       <option value="" disabled>Выберите пол</option>
-                      <option value="">-</option>
+                      <option value="all_sex">-</option>
                       <option value="М">Мужчина</option>
                       <option value="Ж">Женщина</option>
                   </select>

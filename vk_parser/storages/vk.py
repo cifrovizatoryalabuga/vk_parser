@@ -211,7 +211,7 @@ class VkStorage:
         if city is not None:
             if city == "None":
                 query = query.filter(VkGroupUserDb.city == None)
-            else:
+            elif city != "all_cities":
                 query = query.filter(VkGroupUserDb.city == city)
         if from_user_year is not None:
             from_date = dt.datetime.strptime(f"01.01.{from_user_year}", "%d.%m.%Y")
@@ -219,7 +219,7 @@ class VkStorage:
         if to_user_year is not None:
             to_date = dt.datetime.strptime(f"01.01.{to_user_year}", "%d.%m.%Y")
             query = query.filter(VkGroupUserDb.birth_date <= to_date)
-        if sex is not None:
+        if sex is not None and sex != "all_sex":
             query = query.filter(VkGroupUserDb.sex == sex)
 
         res = await session.scalars(query)
