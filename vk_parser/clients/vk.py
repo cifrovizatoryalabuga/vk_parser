@@ -112,6 +112,135 @@ class VkWallPosts(BaseModel):
     items: Sequence[VkWallPost]
 
 
+class VkPeer(BaseModel):
+    id: int
+    type: str
+    local_id: int
+
+
+class VkPushSettings(BaseModel):
+    disabled_until: int
+    disabled_forever: bool
+    no_sound: bool
+
+
+class VkCanWrite(BaseModel):
+    allowed: bool
+    reason: int
+
+
+class VkGeoPlace(BaseModel):
+    id: int
+    title: str
+    latitude: int
+    longitude: int
+    created: int
+    icon: str
+    country: str
+    city: str
+
+
+class VkGeo(BaseModel):
+    type: str
+    coordinates: str
+    place: Sequence[VkGeoPlace]
+
+
+class VkPinnedMessage(BaseModel):
+    id: int
+    date: int
+    from_id: int
+    text: str
+    attachments: str
+    geo: Sequence[VkGeo]
+    fwd_messages: list[int]
+
+
+class VkPhoto(BaseModel):
+    photo_50: str
+    photo_100: str
+    photo_200: str
+    photo_base: str
+
+
+class VkChatSettings(BaseModel):
+    members_count: int
+    title: str
+    pinned_message: Sequence[VkPinnedMessage]
+    state: str
+    photo: Sequence[VkPhoto]
+    active_ids: list[int]
+    is_group_channel: bool
+
+
+class VkConversation(BaseModel):
+    peer: Sequence[VkPeer]
+    in_read: int
+    out_read: int
+    unread_count: int
+    important: bool
+    unanswered: bool
+    push_settings: Sequence[VkPushSettings]
+    can_write: Sequence[VkCanWrite]
+    chat_settings: Sequence[VkChatSettings]
+
+
+class VkAction(BaseModel):
+    type: str
+    member_id: int
+    text: str
+    email: str
+    photo: Sequence[VkPhoto]
+
+
+class VkMessage(BaseModel):
+    id: int
+    date: int
+    peer_id: int
+    from_id: int
+    text: str
+    random_id: int
+    ref: str
+    ref_source: str
+    attachments: dict
+    important: bool
+    geo: Sequence[VkGeo]
+    payload: str
+    keyboard: dict
+    fwd_messages: list[int]
+    reply_message: Sequence["VkMessage"]
+    action: Sequence[VkAction]
+    admin_author_id: int
+    conversation_message_id: int
+    is_cropped: bool
+    members_count: int
+    update_time: int
+    was_listened: bool
+    pinned_at: int
+    message_tag: str
+    is_mentioned_user: bool
+
+
+class VkMessagesConversation(BaseModel):
+    conversation: Sequence[VkConversation]
+    last_message: Sequence[VkMessage]
+
+
+class VkProfile(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    deactivated: str
+    is_closed: bool
+    can_access_closed: str
+
+
+class VkMessagesConversations(BaseModel):
+    count: int
+    items: Sequence[VkMessagesConversation]
+    unread_count: int
+
+
 @unique
 class VkObjectType(StrEnum):
     USER = "user"
@@ -173,6 +302,18 @@ async def parse_group_members(data: dict[str, Any]) -> VkGroupMembers | None:
 
 
 @parse_vk_response
+async def parse_conversations(data: dict[str, Any]) -> VkMessagesConversations | None:
+    try:
+        conversations = VkMessagesConversations(**data["response"])
+    except ValidationError:
+        return None
+    except KeyError:
+        log.warning("Got key error with data %s", data)
+        return None
+    return conversations
+
+
+@parse_vk_response
 async def parse_resolve_screen_name(data: dict[str, Any]) -> VkResolvedObject | None:
     try:
         resolved_object = VkResolvedObject(**data["response"])
@@ -221,6 +362,12 @@ class Vk(BaseHttpClient):
     RESOLVE_SCREEN_NAME: ResponseHandlersType = MappingProxyType(
         {
             HTTPStatus.OK: parse_resolve_screen_name,
+        }
+    )
+
+    GET_CONVERSATIONS_HANDLERS: ResponseHandlersType = MappingProxyType(
+        {
+            HTTPStatus.OK: parse_conversations,
         }
     )
 
@@ -371,4 +518,30 @@ class Vk(BaseHttpClient):
                 "count": count,
                 **self._default_kwargs,
             },
+        )
+
+    @asyncretry(max_tries=8, pause=1)
+    async def get_conversations(
+        self,
+        fields: str = "",
+        messages_filter: str = None,
+        extended: int = 0,
+        offset: int = 0,
+        count: int = 200,
+        timeout: TimeoutType = DEFAULT_TIMEOUT,
+    ) -> VkMessagesConversations | None:
+        log.info("Request VK API method: groups.getConversations")
+        return await self._make_req(
+            method=hdrs.METH_GET,
+            url=self._url / "method/messages.getConversations",
+            handlers=self.GET_CONVERSATIONS_HANDLERS,
+            timeout=timeout,
+            params={
+                "fields": ",".join(fields),
+                "filter": messages_filter,
+                "extended": extended,
+                "offset": offset,
+                "count": count,
+                **self._default_kwargs,
+            }
         )
