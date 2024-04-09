@@ -49,6 +49,7 @@ class ParserRequestDetailTemplateHandler(
             "city": self.request.query.get("city", ""),
             "from_user_year": self.request.query.get("from_user_year", None),
             "to_user_year": self.request.query.get("to_user_year", None),
+            "sex": self.request.query.get("sex", None),
         }
         parser_request = await self.parser_request_storage.get_detail(
             id_=parser_request_id,
@@ -86,20 +87,22 @@ class ParserRequestDetailTemplateHandler(
                     and response_data["to_user_year"]
                 ):
                     users = (
-                        await self.vk_storage.get_users_by_parser_request_id_filtered(
+                        await self.vk_storage.get_users_by_parser_request_id_advanced_filter(
                             parser_request_id,
-                            filtered_city=response_data["city"],
-                            filtered_year_from=response_data["from_user_year"],
-                            filtered_year_to=response_data["to_user_year"],
+                            city=response_data["city"],
+                            from_user_year=response_data["from_user_year"],
+                            to_user_year=response_data["to_user_year"],
+                            sex=response_data["sex"],
                         )
                     )
-                    pagination = await self.parser_request_storage.admin_pagination_users_filtered(
+                    pagination = await self.parser_request_storage.admin_pagination_users_advanced_filter(
                         parser_request_id,
                         page=params.page,
                         page_size=params.page_size,
                         filtered_city=response_data["city"],
                         filtered_year_from=response_data["from_user_year"],
                         filtered_year_to=response_data["to_user_year"],
+                        filtered_sex=response_data["sex"],
                     )
                 else:
                     users = await self.vk_storage.get_users_by_parser_request_id(
@@ -138,6 +141,12 @@ class ParserRequestDetailTemplateHandler(
     @aiohttp_jinja2.template("./parser_request/detail.html.j2")
     async def post(self) -> None:
         parser_request_id = self._get_id()
+        response_data = {
+            "city": self.request.query.get("city", ""),
+            "from_user_year": self.request.query.get("from_user_year", None),
+            "to_user_year": self.request.query.get("to_user_year", None),
+            "sex": self.request.query.get("sex", None),
+        }
         jwt_token = self.request.cookies.get("jwt_token")
         if jwt_token:
             try:
@@ -153,15 +162,36 @@ class ParserRequestDetailTemplateHandler(
             self.parser_request_storage.redirector(url="/")
         )
         send_messages_task = asyncio.create_task(
-            self.send_messages(parser_request_id, user_id)
+            self.send_messages(
+                parser_request_id,
+                user_id,
+                city=response_data["city"],
+                from_user_year=response_data["from_user_year"],
+                to_user_year=response_data["to_user_year"],
+                sex=response_data["sex"],
+            )
         )
 
         await asyncio.gather(redirector_task, send_messages_task)
 
         return None
 
-    async def send_messages(self, parser_request_id: int, user_id: int) -> None:
-        users = await self.vk_storage.get_users_by_parser_request_id(parser_request_id)
+    async def send_messages(
+        self,
+        parser_request_id: int,
+        user_id: int,
+        city: str,
+        from_user_year: int,
+        to_user_year: int,
+        sex: str,
+    ) -> None:
+        users = await self.vk_storage.get_users_by_parser_request_id_advanced_filter(
+            parser_request_id,
+            city,
+            from_user_year,
+            to_user_year,
+            sex,
+        )
         async with ClientSession() as session:
             for user in users:
                 try:
