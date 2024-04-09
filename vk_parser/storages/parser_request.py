@@ -25,10 +25,7 @@ from vk_parser.generals.models.parser_request import (
     Result,
 )
 from vk_parser.generals.models.vk_group_user import VkGroupUser
-from vk_parser.generals.models.vk_user_messanger import (
-    Messages,
-    SendAccounts,
-)
+from vk_parser.generals.models.vk_user_messanger import Messages, SendAccounts
 from vk_parser.storages.base import PaginationMixin
 
 log = logging.getLogger(__name__)
@@ -166,6 +163,44 @@ class ParserRequestStorage(PaginationMixin):
             .where(VkGroupDb.parser_request_id == parser_request_id)
             .order_by(VkGroupUserDb.created_at)
         )
+        return await self._paginate(
+            query=query,
+            page=page,
+            page_size=page_size,
+            model_type=VkGroupUser,
+        )
+
+    async def admin_pagination_users_advanced_filter(
+        self,
+        parser_request_id: int,
+        filtered_city: str,
+        filtered_year_from: str,
+        filtered_year_to: str,
+        filtered_sex: str,
+        page: int,
+        page_size: int,
+    ) -> PaginationResponse[VkGroupUser]:
+        query = (
+            select(VkGroupUserDb)
+            .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
+            .where(VkGroupDb.parser_request_id == parser_request_id)
+            .order_by(VkGroupUserDb.created_at)
+        )
+
+        if filtered_city is not None:
+            if filtered_city == "None":
+                query = query.filter(VkGroupUserDb.city == None)
+            else:
+                query = query.filter(VkGroupUserDb.city == filtered_city)
+        if filtered_year_from is not None:
+            from_date = dt.datetime.strptime(f"01.01.{filtered_year_from}", "%d.%m.%Y")
+            query = query.filter(VkGroupUserDb.birth_date >= from_date)
+        if filtered_year_to is not None:
+            to_date = dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
+            query = query.filter(VkGroupUserDb.birth_date <= to_date)
+        if filtered_sex is not None:
+            query = query.filter(VkGroupUserDb.sex == filtered_sex)
+
         return await self._paginate(
             query=query,
             page=page,

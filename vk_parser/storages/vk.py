@@ -192,6 +192,40 @@ class VkStorage:
         return [VkGroupUser.model_validate(r) for r in res]
 
     @inject_session
+    async def get_users_by_parser_request_id_advanced_filter(
+        self,
+        session: AsyncSession,
+        parser_request_id: int,
+        city: str = None,
+        from_user_year: int = None,
+        to_user_year: int = None,
+        sex: str = None,
+    ) -> Sequence[VkGroupUser]:
+        query = (
+            select(VkGroupUserDb)
+            .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
+            .where(VkGroupDb.parser_request_id == parser_request_id)
+            .order_by(VkGroupUserDb.created_at)
+        )
+
+        if city is not None:
+            if city == "None":
+                query = query.filter(VkGroupUserDb.city == None)
+            else:
+                query = query.filter(VkGroupUserDb.city == city)
+        if from_user_year is not None:
+            from_date = dt.datetime.strptime(f"01.01.{from_user_year}", "%d.%m.%Y")
+            query = query.filter(VkGroupUserDb.birth_date >= from_date)
+        if to_user_year is not None:
+            to_date = dt.datetime.strptime(f"01.01.{to_user_year}", "%d.%m.%Y")
+            query = query.filter(VkGroupUserDb.birth_date <= to_date)
+        if sex is not None:
+            query = query.filter(VkGroupUserDb.sex == sex)
+
+        res = await session.scalars(query)
+        return [VkGroupUser.model_validate(r) for r in res]
+
+    @inject_session
     async def get_users_by_parser_request_id_filtered(
         self,
         session: AsyncSession,
