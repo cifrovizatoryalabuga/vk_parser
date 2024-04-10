@@ -46,7 +46,7 @@ class ParserRequestDetailTemplateHandler(
     async def get(self) -> Mapping[str, Any]:
         parser_request_id = self._get_id()
         response_data = {
-            "city": self.request.query.get("city", ""),
+            "city": self.request.query.get("city", None),
             "from_user_year": self.request.query.get("from_user_year", None),
             "to_user_year": self.request.query.get("to_user_year", None),
             "sex": self.request.query.get("sex", None),
@@ -85,6 +85,7 @@ class ParserRequestDetailTemplateHandler(
                     response_data["city"]
                     and response_data["from_user_year"]
                     and response_data["to_user_year"]
+                    and response_data["sex"]
                 ):
                     users = (
                         await self.vk_storage.get_users_by_parser_request_id_advanced_filter(
@@ -142,7 +143,7 @@ class ParserRequestDetailTemplateHandler(
     async def post(self) -> None:
         parser_request_id = self._get_id()
         response_data = {
-            "city": self.request.query.get("city", ""),
+            "city": self.request.query.get("city", None),
             "from_user_year": self.request.query.get("from_user_year", None),
             "to_user_year": self.request.query.get("to_user_year", None),
             "sex": self.request.query.get("sex", None),

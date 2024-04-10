@@ -187,7 +187,7 @@ class ParserRequestStorage(PaginationMixin):
         if filtered_city is not None:
             if filtered_city == "None":
                 query = query.filter(VkGroupUserDb.city == None)
-            else:
+            elif filtered_city != "all_cities":
                 query = query.filter(VkGroupUserDb.city == filtered_city)
         if filtered_year_from is not None:
             from_date = dt.datetime.strptime(f"01.01.{filtered_year_from}", "%d.%m.%Y")
@@ -195,7 +195,7 @@ class ParserRequestStorage(PaginationMixin):
         if filtered_year_to is not None:
             to_date = dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
             query = query.filter(VkGroupUserDb.birth_date <= to_date)
-        if filtered_sex is not None:
+        if filtered_sex is not None and filtered_sex != "all_sex":
             query = query.filter(VkGroupUserDb.sex == filtered_sex)
 
         return await self._paginate(
