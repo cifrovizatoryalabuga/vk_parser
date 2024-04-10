@@ -46,10 +46,10 @@ class ParserRequestDetailTemplateHandler(
     async def get(self) -> Mapping[str, Any]:
         parser_request_id = self._get_id()
         response_data = {
-            "city": self.request.query.get("city", None),
-            "from_user_year": self.request.query.get("from_user_year", None),
-            "to_user_year": self.request.query.get("to_user_year", None),
-            "sex": self.request.query.get("sex", None),
+            "city": self.request.query.get("city", ""),
+            "from_user_year": self.request.query.get("from_user_year", ""),
+            "to_user_year": self.request.query.get("to_user_year", ""),
+            "sex": self.request.query.get("sex", ""),
         }
         parser_request = await self.parser_request_storage.get_detail(
             id_=parser_request_id,
@@ -143,10 +143,10 @@ class ParserRequestDetailTemplateHandler(
     async def post(self) -> None:
         parser_request_id = self._get_id()
         response_data = {
-            "city": self.request.query.get("city", None),
-            "from_user_year": self.request.query.get("from_user_year", None),
-            "to_user_year": self.request.query.get("to_user_year", None),
-            "sex": self.request.query.get("sex", None),
+            "city": self.request.query.get("city", ""),
+            "from_user_year": self.request.query.get("from_user_year", ""),
+            "to_user_year": self.request.query.get("to_user_year", ""),
+            "sex": self.request.query.get("sex", ""),
         }
         jwt_token = self.request.cookies.get("jwt_token")
         if jwt_token:
