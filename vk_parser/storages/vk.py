@@ -186,7 +186,6 @@ class VkStorage:
             select(VkGroupUserDb)
             .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
             .where(VkGroupDb.parser_request_id == parser_request_id)
-            .order_by(VkGroupUserDb.created_at)
         )
         res = await session.scalars(query)
         return [VkGroupUser.model_validate(r) for r in res]
@@ -205,7 +204,6 @@ class VkStorage:
             select(VkGroupUserDb)
             .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
             .where(VkGroupDb.parser_request_id == parser_request_id)
-            .order_by(VkGroupUserDb.created_at)
         )
 
         if city is not None:
@@ -254,7 +252,6 @@ class VkStorage:
                         <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
                     ),
                 )
-                .order_by(VkGroupUserDb.created_at)
             )
             res = await session.scalars(query)
             return [VkGroupUser.model_validate(r) for r in res]
@@ -275,7 +272,6 @@ class VkStorage:
                         ),
                     )
                 )
-                .order_by(VkGroupUserDb.created_at)
             )
             res = await session.scalars(query)
             return [VkGroupUser.model_validate(r) for r in res]

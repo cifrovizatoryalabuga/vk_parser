@@ -182,7 +182,6 @@ class ParserRequestStorage(PaginationMixin):
             select(VkGroupUserDb)
             .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
             .where(VkGroupDb.parser_request_id == parser_request_id)
-            .order_by(VkGroupUserDb.created_at)
         )
 
         if filtered_city is not None:
@@ -236,7 +235,6 @@ class ParserRequestStorage(PaginationMixin):
                             <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
                         )
                     )
-                    .order_by(VkGroupUserDb.created_at)
                 )
             else:
                 query = (
@@ -255,7 +253,6 @@ class ParserRequestStorage(PaginationMixin):
                             <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
                         )
                     )
-                    .order_by(VkGroupUserDb.created_at)
                 )
         else:
             query = (
@@ -274,7 +271,6 @@ class ParserRequestStorage(PaginationMixin):
                         <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
                     )
                 )
-                .order_by(VkGroupUserDb.created_at)
             )
         return await self._paginate(
             query=query,
