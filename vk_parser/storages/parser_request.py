@@ -142,7 +142,6 @@ class ParserRequestStorage(PaginationMixin):
         query = (
             select(SendAccountsDb)
             .where(SendAccountsDb.user_id == user_id)
-            .order_by(SendAccountsDb.created_at.desc())
         )
         return await self._paginate(
             query=query,
@@ -161,7 +160,6 @@ class ParserRequestStorage(PaginationMixin):
             select(VkGroupUserDb)
             .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
             .where(VkGroupDb.parser_request_id == parser_request_id)
-            .order_by(VkGroupUserDb.created_at)
         )
         return await self._paginate(
             query=query,

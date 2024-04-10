@@ -160,23 +160,23 @@
           {% with page = pagination.meta.page, page_size = pagination.meta.page_size, pages = pagination.meta.pages %}
               {% if page != 1 %}
               <li class="waves-effect">
-                <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&page_size={{ page_size }}&page={{ page - 1 }}"><i class="material-icons">chevron_left</i></a>
+                <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page - 1 }}"><i class="material-icons">chevron_left</i></a>
               </li>
               {%endif%}
               {% if page == 1 %}
               <li class="active"><a href="#!">{{ page }}</a></li>
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
               {% elif page == pages %}
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
               <li class="active"><a href="#!">{{ page }}</a></li>
               {% elif page > 1 %}
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
               <li class="active"><a href="#!">{{ page }}</a></li>
-              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
+              <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
               {%endif%}
               {% if page != pages%}
               <li class="waves-effect">
-              <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
+              <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
               </li>
               {%endif%}
           {%endwith%}
