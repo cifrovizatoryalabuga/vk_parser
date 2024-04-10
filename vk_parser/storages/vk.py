@@ -134,6 +134,25 @@ class VkStorage:
             raise e
 
     @inject_session
+    async def update_successful_messages_by_id(
+        self,
+        session: AsyncSession,
+        account_id: int,
+    ) -> None:
+        try:
+            account = await session.execute(
+                select(SendAccountsDb).where(SendAccountsDb.id == account_id),
+            )
+            account = account.scalars().first()
+
+            account.successful_messages += 1
+
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+            raise e
+
+    @inject_session
     async def get_group_user_ids(
         self,
         session: AsyncSession,

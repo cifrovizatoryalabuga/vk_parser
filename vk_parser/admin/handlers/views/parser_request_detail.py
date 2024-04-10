@@ -46,10 +46,10 @@ class ParserRequestDetailTemplateHandler(
     async def get(self) -> Mapping[str, Any]:
         parser_request_id = self._get_id()
         response_data = {
-            "city": self.request.query.get("city", ""),
-            "from_user_year": self.request.query.get("from_user_year", ""),
-            "to_user_year": self.request.query.get("to_user_year", ""),
-            "sex": self.request.query.get("sex", ""),
+            "city": self.request.query.get("city", "all_cities"),
+            "from_user_year": self.request.query.get("from_user_year", 1900),
+            "to_user_year": self.request.query.get("to_user_year", 2024),
+            "sex": self.request.query.get("sex", "all_sex"),
         }
         parser_request = await self.parser_request_storage.get_detail(
             id_=parser_request_id,
@@ -143,10 +143,10 @@ class ParserRequestDetailTemplateHandler(
     async def post(self) -> None:
         parser_request_id = self._get_id()
         response_data = {
-            "city": self.request.query.get("city", ""),
-            "from_user_year": self.request.query.get("from_user_year", ""),
-            "to_user_year": self.request.query.get("to_user_year", ""),
-            "sex": self.request.query.get("sex", ""),
+            "city": self.request.query.get("city", "all_cities"),
+            "from_user_year": self.request.query.get("from_user_year", 1900),
+            "to_user_year": self.request.query.get("to_user_year", 2024),
+            "sex": self.request.query.get("sex", "all_sex"),
         }
         jwt_token = self.request.cookies.get("jwt_token")
         if jwt_token:
@@ -172,6 +172,7 @@ class ParserRequestDetailTemplateHandler(
                 sex=response_data["sex"],
             )
         )
+        await send_messages_task
 
         await asyncio.gather(redirector_task, send_messages_task)
 
@@ -204,13 +205,15 @@ class ParserRequestDetailTemplateHandler(
         return None
 
     async def send_message_to_user(self, session, user: str, user_id: int) -> None:
+        random_account = choice(
+            await self.parser_request_storage.get_random_account(user_id)
+        )
+
         async with session.post(
             "https://api.vk.com/method/messages.send",
             params={
                 "user_id": user.vk_user_id,
-                "access_token": choice(
-                    await self.parser_request_storage.get_random_account(user_id)
-                ).secret_token,
+                "access_token": random_account.secret_token,
                 "message": choice(
                     await self.parser_request_storage.get_random_message(user_id)
                 ).message,
@@ -218,6 +221,11 @@ class ParserRequestDetailTemplateHandler(
                 "v": "5.131",
             },
         ) as response:
-            await response.json()
+            json_response = await response.json()
+
+        if "error" not in json_response:
+            await self.vk_storage.update_successful_messages_by_id(
+                random_account.id,
+            )
 
         return None
