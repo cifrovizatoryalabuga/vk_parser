@@ -79,5 +79,15 @@ services:
       APP_AMQP_RETRY_PAUSE_SECONDS: $AMQP_RETRY_PAUSE_SECONDS
       APP_AMQP_RETRY_COUNT_LIMIT: $AMQP_RETRY_COUNT_LIMIT
 
+  celery:
+    depends_on:
+      - db
+      - rabbitmq
+      - admin
+    image: dan/vk-parser:latest
+    entrypoint: celery -A vk_parser.admin.celery.celery_app worker -l info -B
+    environment:
+      APP_AMQP_DSN: $AMQP_DSN
+
 volumes:
   postgres_data:
