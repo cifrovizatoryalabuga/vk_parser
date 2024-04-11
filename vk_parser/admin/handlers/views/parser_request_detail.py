@@ -172,7 +172,6 @@ class ParserRequestDetailTemplateHandler(
                 sex=response_data["sex"],
             )
         )
-        await send_messages_task
 
         await asyncio.gather(redirector_task, send_messages_task)
 
