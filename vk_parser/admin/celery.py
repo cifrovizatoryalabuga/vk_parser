@@ -15,6 +15,6 @@ celery_app.conf.broker_connection_retry_on_startup = True
 celery_app.conf.beat_schedule = {
     "reset_send_accounts": {
         "task": "vk_parser.tasks.resetting_send_accounts_task.reset_send_accounts_task",
-        "schedule": crontab(hour=14, minute=10),
+        "schedule": crontab(hour=3, minute=0),
     },
 }
