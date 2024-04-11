@@ -14,6 +14,7 @@ from vk_parser.clients.vk import VkGroupMember, VkWallPost
 from vk_parser.db.models.vk_group import VkGroup as VkGroupDb
 from vk_parser.db.models.vk_group_post import VkGroupPost as VkGroupPostDb
 from vk_parser.db.models.vk_group_user import VkGroupUser as VkGroupUserDb
+from vk_parser.db.models.vk_user_messanger import MAX_SUCCESSFUL_MESSAGES
 from vk_parser.db.models.vk_user_messanger import Messages as MessagesDb
 from vk_parser.db.models.vk_user_messanger import SendAccounts as SendAccountsDb
 from vk_parser.db.utils import inject_session
@@ -146,6 +147,9 @@ class VkStorage:
             account = account.scalars().first()
 
             account.successful_messages += 1
+
+            if account.successful_messages >= MAX_SUCCESSFUL_MESSAGES:
+                account.is_disabled = True
 
             await session.commit()
         except Exception as e:
