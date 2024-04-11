@@ -37,7 +37,7 @@ class SendAccounts(TimestampMixin, Base):
     )
     is_disabled: Mapped[bool] = mapped_column(
         Boolean,
-        nullable=False,
+        nullable=True,
         default=False,
     )
 
