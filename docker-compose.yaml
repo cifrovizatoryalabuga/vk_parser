@@ -88,6 +88,7 @@ services:
     entrypoint: celery -A vk_parser.admin.celery.celery_app worker -l info -B
     environment:
       APP_AMQP_DSN: $AMQP_DSN
+      APP_PG_DSN: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
 
 volumes:
   postgres_data:
