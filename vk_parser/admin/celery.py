@@ -5,7 +5,7 @@ from celery.schedules import crontab
 
 celery_app = Celery(
     "vk_parser",
-    broker_url=os.environ.get("AMQP_DSN"),
+    broker_url=os.environ.get("APP_AMQP_DSN"),
 )
 
 celery_app.autodiscover_tasks(["vk_parser.tasks"])
