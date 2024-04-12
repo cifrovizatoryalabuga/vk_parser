@@ -18,18 +18,18 @@ from vk_parser.admin.handlers.change_role import ChangeRoleDBHandler
 from vk_parser.admin.handlers.delete_account import DeleteUserBDHandler
 from vk_parser.admin.handlers.delete_accounts_db import DeleteAccountsBDHandler
 from vk_parser.admin.handlers.delete_messages_db import DeleteMessagesBDHandler
+from vk_parser.admin.handlers.delete_parser import DeleteParserDBHandler
 from vk_parser.admin.handlers.delete_user_from_parser import (
     DeleteUserFromParserBDHandler,
 )
+from vk_parser.admin.handlers.logout_user import LogoutUser
 from vk_parser.admin.handlers.parser_request_create import ParserRequestCreateHandler
 from vk_parser.admin.handlers.parser_request_detail import ParserRequestDetailHandler
 from vk_parser.admin.handlers.parser_request_list import ParserRequestListHandler
-from vk_parser.admin.handlers.views.all_users_panel import AllUsersTemplateHandler
-from vk_parser.admin.handlers.views.registration_user import RegistrationUserTemplateHandler
-from vk_parser.admin.handlers.views.login_user import LoginUserTemplateHandler
-from vk_parser.admin.handlers.logout_user import LogoutUser
 from vk_parser.admin.handlers.ping import PingHandler
+from vk_parser.admin.handlers.views.all_users_panel import AllUsersTemplateHandler
 from vk_parser.admin.handlers.views.index import IndexTemplateHandler
+from vk_parser.admin.handlers.views.login_user import LoginUserTemplateHandler
 from vk_parser.admin.handlers.views.parser_request_accounts import (
     ParserRequestListAccountsTemplateHandler,
 )
@@ -46,13 +46,16 @@ from vk_parser.admin.handlers.views.parser_request_messages import (
     ParserRequestListMessagesTemplateHandler,
 )
 from vk_parser.admin.handlers.views.redirect_to_admin import RedirectToAdminHandler
+from vk_parser.admin.handlers.views.registration_user import (
+    RegistrationUserTemplateHandler,
+)
 from vk_parser.admin.handlers.views.vk_group_user_download_csv import (
     VkGroupUserDownloadCsvHandler,
 )
+from vk_parser.storages.authorization import AuthorizationStorage
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.ping import PingStorage
 from vk_parser.storages.vk import VkStorage
-from vk_parser.storages.authorization import AuthorizationStorage
 from vk_parser.utils.filters import datetime_format
 
 log = logging.getLogger(__name__)
@@ -196,6 +199,12 @@ class Admin(AIOHTTPService):
             "/admin/delete_user/",
             DeleteUserFromParserBDHandler,
             "request_user_delete",
+        ),
+        (
+            hdrs.METH_POST,
+            "/admin/delete_parser/",
+            DeleteParserDBHandler,
+            "request_parser_delete",
         ),
         (
             hdrs.METH_GET,

@@ -42,6 +42,9 @@
               <td><a href="/admin/parsers/{{ item.id }}/">{{ item.created_at|datetime_format }}</a></td>
               <td><a href="/admin/parsers/{{ item.id }}/">{% if item.finished_at %}{{ item.finished_at|datetime_format }}{% endif %}</a></td>
               <td><a href="/admin/parsers/{{ item.id }}/">{% if item.error_message %}{{ item.error_message }}{% endif %}</a></td>
+              <td>
+                <span class="delete-icon" onclick="toggleDelete('{{ item.id }}')">&#10006;</span>
+              </td>
             </tr>
             {% endfor %}
           </tbody>
@@ -67,4 +70,34 @@
 
   </div>
 </div>
-{% endblock content %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+  function toggleDelete(parserId) {
+    // Отправка данных на сервер
+    fetch('/admin/delete_parser/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        parserId: parserId
+      })
+    })
+    .then(response => {
+      // Обработка ответа от сервера
+      console.log(response);
+      // Обновление страницы после успешного удаления
+      const newUrl = window.location.origin + window.location.pathname;
+      history.replaceState({}, document.title, newUrl);
+      location.reload();
+    })
+    .catch(error => {
+      // Обработка ошибки
+      console.error('Ошибка:', error);
+    });
+}
+</script>
+{% endblock %}
