@@ -29,8 +29,8 @@
           </a>
       </div>
       <div class="col s6">
-          <form action="/admin/parsers/{{parser_request.id}}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}" method="post">
-            <button class="blue waves-effect waves-light btn-small" type="submit">
+          <form id="sendMessageForm" action="/admin/parsers/{{parser_request.id}}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}" method="post">
+            <button class="blue waves-effect waves-light btn-small" type="button" onclick="confirmSendMessage()">
                 <i class="material-icons left">cloud</i>Отправить сообщения
             </button>
           </form>
@@ -246,7 +246,14 @@
         console.error('Ошибка:', error);
       });
   }
+
+  function confirmSendMessage() {
+    if (confirm("Вы уверены, что хотите отправить сообщения?")) {
+      document.getElementById("sendMessageForm").submit();
+    } else {
+      return false;
+    }
+  }
 </script>
 
 {% endblock %}
-
