@@ -11,6 +11,7 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from vk_parser.clients.vk import VkGroupMember, VkWallPost
+from vk_parser.db.models.parser_request import ParserRequest as ParserRequestDb
 from vk_parser.db.models.vk_group import VkGroup as VkGroupDb
 from vk_parser.db.models.vk_group_post import VkGroupPost as VkGroupPostDb
 from vk_parser.db.models.vk_group_user import VkGroupUser as VkGroupUserDb
@@ -127,6 +128,22 @@ class VkStorage:
                     VkGroupUserDb.vk_user_id == id,
                     VkGroupUserDb.parser_request_id == parser_request_id,
                 )
+            )
+            await session.execute(query)
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
+            raise e
+
+    @inject_session
+    async def remove_parser_by_id(
+        self,
+        session: AsyncSession,
+        id: int,
+    ) -> None:
+        try:
+            query = delete(ParserRequestDb).where(
+                ParserRequestDb.id == id,
             )
             await session.execute(query)
             await session.commit()
