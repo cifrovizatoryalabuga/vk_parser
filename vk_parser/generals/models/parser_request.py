@@ -12,7 +12,7 @@ class SimpleVkForm(BaseModel):
 
     parser_type: Literal[ParserTypes.VK_SIMPLE_DOWNLOAD]
     group_url: HttpUrl
-    min_age: int
+    max_age: int
 
 
 class ParsePostsVkForm(BaseModel):
@@ -21,7 +21,7 @@ class ParsePostsVkForm(BaseModel):
     parser_type: Literal[ParserTypes.VK_DOWNLOAD_AND_PARSED_POSTS]
     group_url: HttpUrl
     posted_up_to: datetime
-    min_age: int
+    max_age: int
 
     @field_validator("posted_up_to", mode="before")
     @classmethod
