@@ -58,7 +58,7 @@ class VkGroupMember(BaseModel):
     university_name: str | None = Field(default=None)
     photo_100: str | None = Field(alias="photo_100", default="https://vk.com/images/camera_100.png")
 
-    def in_age_range(self, max_age: int) -> bool:
+    def in_age_range(self, min_age: int, max_age: int) -> bool:
         if not self.birth_date:
             return False
         try:
@@ -69,7 +69,7 @@ class VkGroupMember(BaseModel):
         age = today.year - birth_dt.year
         if (today.month, today.day) < (birth_dt.month, birth_dt.day):
             age -= 1
-        return age <= max_age
+        return min_age <= age <= max_age
 
     @property
     def parsed_birth_date(self) -> date | None:

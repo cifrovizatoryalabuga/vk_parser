@@ -48,6 +48,7 @@ class PostVkParser(BaseParser):
             ),
             self._download_users(
                 vk_group=vk_group,
+                min_age=data.min_age,
                 max_age=data.max_age,
                 parser_request_id=parser_request_id,
             ),
@@ -136,6 +137,7 @@ class PostVkParser(BaseParser):
     async def _download_users(
         self,
         vk_group: VkGroup,
+        min_age: int,
         max_age: int,
     ) -> Sequence[VkGroupMember]:
         users: list[VkGroupMember] = []
@@ -150,7 +152,7 @@ class PostVkParser(BaseParser):
                 do_next = False
                 break
             for user in chunk_users.items:
-                if user.in_age_range(max_age=max_age):
+                if user.in_age_range(min_age=min_age, max_age=max_age):
                     users.append(user)
             offset += len(chunk_users.items)
             if offset >= chunk_users.count:
@@ -189,6 +191,7 @@ class SimpleVkParser(BaseParser):
         )
         users = await self._download_users(
             vk_group=vk_group,
+            min_age=data.min_age,
             max_age=data.max_age,
             parser_request_id=parser_request_id,
         )
@@ -230,6 +233,7 @@ class SimpleVkParser(BaseParser):
     async def _download_users(
         self,
         vk_group: VkGroup,
+        min_age: int,
         max_age: int,
         parser_request_id: int,
     ) -> Sequence[VkGroupMember]:
@@ -246,7 +250,7 @@ class SimpleVkParser(BaseParser):
                 break
             for user in chunk_users.items:
                 print(user.university_name)
-                if user.in_age_range(max_age=max_age):
+                if user.in_age_range(min_age=min_age, max_age=max_age):
                     users.append(user)
             offset += len(chunk_users.items)
             if offset >= chunk_users.count:
