@@ -159,29 +159,60 @@
         <ul class="pagination">
           {% with page = pagination.meta.page, page_size = pagination.meta.page_size, pages = pagination.meta.pages %}
             {% if pages > 1 %}
+              <!-- Previous page -->
               {% if page != 1 %}
                 <li class="waves-effect">
-                    <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page - 1 }}"><i class="material-icons">chevron_left</i></a>
+                  <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page - 1 }}"><i class="material-icons">chevron_left</i></a>
                 </li>
-              {%endif%}
-              {% if page == 1 %}
-                <li class="active"><a href="#!">{{ page }}</a></li>
-                <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
-              {% elif page == pages %}
-                <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
-                <li class="active"><a href="#!">{{ page }}</a></li>
-              {% elif page > 1 %}
-                <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
-                <li class="active"><a href="#!">{{ page }}</a></li>
-                <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
-              {%endif%}
-              {% if page != pages%}
+              {% endif %}
+
+              {% if page > 2 %}
+                <!-- First page -->
+                <li class="{% if page == 1 %} active {% else %} inactive {% endif %}">
+                  <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page=1">1</a>
+                </li>
+                <li class="inactive"><span>...</span></li>
+              {% endif %}
+        
+              <!-- Middle pages -->
+              {% if pages > 2 %}
+                {% if page == 1 %}
+                  <li class="active"><a href="#!">{{ page }}</a></li>
+                  <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page=2">2</a></li>
+                  {% if pages > 3 %}
+                    <li class="inactive"><span>...</span></li>
+                  {% endif %}
+                {% elif page == pages %}
+                  {% if pages > 3 %}
+                    <li class="inactive"><span>...</span></li>
+                  {% endif %}
+                  <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ pages - 1 }}">{{ pages - 1 }}</a></li>
+                  <li class="active"><a href="#!">{{ pages }}</a></li>
+                {% else %}
+                  <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page - 1 }}">{{ page - 1 }}</a></li>
+                  <li class="active"><a href="#!">{{ page }}</a></li>
+                  <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page + 1 }}">{{ page + 1 }}</a></li>
+                  {% if pages > page + 1 %}
+                    <li class="inactive"><span>...</span></li>
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+        
+              {% if page + 1 < pages %}
+                <!-- Last page -->
+                <li class="{% if page == pages %} active {% else %} inactive {% endif %}">
+                  <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ pages }}">{{ pages }}</a>
+                </li>
+              {% endif %}
+        
+              <!-- Next page -->
+              {% if page != pages %}
                 <li class="waves-effect">
-                    <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
+                  <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
                 </li>
-              {%endif%}
+              {% endif %}
             {% endif %}
-          {%endwith%}
+          {% endwith %}
         </ul>
         {% endif %}
     </div>
