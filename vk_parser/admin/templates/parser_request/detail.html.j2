@@ -183,9 +183,6 @@
                     <li class="inactive"><span>...</span></li>
                   {% endif %}
                 {% elif page == pages %}
-                  {% if pages > 3 %}
-                    <li class="inactive"><span>...</span></li>
-                  {% endif %}
                   <li class="inactive"><a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ pages - 1 }}">{{ pages - 1 }}</a></li>
                   <li class="active"><a href="#!">{{ pages }}</a></li>
                 {% else %}
