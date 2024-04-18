@@ -25,7 +25,7 @@ aiohttp-jinja2 = "^1.6"
 vk-api = "^11.9.9"
 vk = "^3.0"
 pyjwt = "^2.8.0"
-celery = "^5.3.6"
+apscheduler = "^3.10.4"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.8.0"
