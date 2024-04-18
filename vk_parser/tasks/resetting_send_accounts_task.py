@@ -19,4 +19,3 @@ async def reset_send_accounts():
                 update(SendAccountsDb).
                 values(is_disabled=False, successful_messages=0)
             )
-        await session.commit()
