@@ -51,18 +51,18 @@
         </table>
         <ul class="pagination">
           {% with page = pagination.meta.page, page_size = pagination.meta.page_size, pages = pagination.meta.pages %}
-          {% if page != 1 %}
-          <li class="waves-effect">
-            <a href="/admin/parsers/?page_size={{ page_size }}&page={{ page - 1 }}">
-            <i class="material-icons">chevron_left</i></a>
-            </li>
-          {%endif%}
-          <li class="active"><a href="#!">{{ page }}</a></li>
-          {% if page != pages%}
-          <li class="waves-effect">
-          <a href="/admin/parsers/?page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
-          </li>
-          {%endif%}
+            {% if page != 1 %}
+              <li class="waves-effect">
+                <a href="/admin/accounts/?page_size={{ page_size }}&page={{ page - 1 }}">
+                <i class="material-icons">chevron_left</i></a>
+              </li>
+            {%endif%}
+            <li class="active"><a href="#!">{{ page }}</a></li>
+            {% if page != pages%}
+              <li class="waves-effect">
+                <a href="/admin/accounts/?page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
+              </li>
+            {%endif%}
           {%endwith%}
           <form class="col s12" method="post">
             <div class="row">
