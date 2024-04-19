@@ -1,7 +1,9 @@
-from sqlalchemy import BigInteger, Boolean, ForeignKey, String, Text
+from sqlalchemy import BigInteger, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from vk_parser.db.models.base import Base, TimestampMixin
+from vk_parser.db.utils import make_pg_enum
+from vk_parser.generals.enums import SendAccountStatus
 
 MAX_SUCCESSFUL_MESSAGES = 20
 
@@ -48,10 +50,14 @@ class SendAccounts(TimestampMixin, Base):
         String(1024),
         nullable=True,
     )
-    is_disabled: Mapped[bool] = mapped_column(
-        Boolean,
-        nullable=True,
-        default=False,
+    status: Mapped[SendAccountStatus] = mapped_column(
+        make_pg_enum(
+            SendAccountStatus,
+            name="status",
+            schema=None,
+        ),
+        nullable=False,
+        server_default=SendAccountStatus.ACTIVE.value,
     )
 
 
