@@ -23,7 +23,7 @@ def main() -> None:
             {
                 "func": reset_send_accounts,
                 "trigger": "cron",
-                "hour=": 3,
+                "hour": 3,
             },
         ],
     )
