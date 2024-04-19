@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from vk_parser.db.models.base import Base, TimestampMixin
 
-MAX_SUCCESSFUL_MESSAGES = 20
+MAX_SUCCESSFUL_MESSAGES = 10
 
 
 class SendAccounts(TimestampMixin, Base):
