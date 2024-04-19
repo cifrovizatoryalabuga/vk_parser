@@ -33,11 +33,8 @@ class AuthUserDownloadCsvHandler(web.View, DependenciesMixin):
             writer.writerow([auth_user.login])
 
             accounts = await self.parser_request_storage.get_all_account_by_user(user_id=auth_user.id)
-            successful_message_count = 0
-            conversation_count = 0
-            for account in accounts:
-                successful_message_count += account.successful_messages
-                conversation_count += get_conversations_for_account(account=account)
+            successful_message_count = sum(account.successful_messages for account in accounts)
+            conversation_count = sum(get_conversations_for_account(account) for account in accounts)
             writer.writerow(
                 [
                     "",
@@ -58,7 +55,10 @@ class AuthUserDownloadCsvHandler(web.View, DependenciesMixin):
                     parser_count_by_date[finished_date] += 1
                     if parser.status == RequestStatus.SUCCESSFUL:
                         success_parser_count_by_date[finished_date] += 1
-            for finished_date in sorted(set(parser_count_by_date.keys()) | set(success_parser_count_by_date.keys())):
+            for finished_date in sorted(
+                set(parser_count_by_date.keys()) |
+                set(success_parser_count_by_date.keys())
+            ):
                 parser_count = parser_count_by_date[finished_date]
                 success_parser_count = success_parser_count_by_date[finished_date]
                 writer.writerow(
