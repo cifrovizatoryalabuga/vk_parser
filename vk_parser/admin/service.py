@@ -28,6 +28,9 @@ from vk_parser.admin.handlers.parser_request_detail import ParserRequestDetailHa
 from vk_parser.admin.handlers.parser_request_list import ParserRequestListHandler
 from vk_parser.admin.handlers.ping import PingHandler
 from vk_parser.admin.handlers.views.all_users_panel import AllUsersTemplateHandler
+from vk_parser.admin.handlers.views.auth_user_download_csv import (
+    AuthUserDownloadCsvHandler,
+)
 from vk_parser.admin.handlers.views.index import IndexTemplateHandler
 from vk_parser.admin.handlers.views.login_user import LoginUserTemplateHandler
 from vk_parser.admin.handlers.views.parser_request_accounts import (
@@ -151,6 +154,12 @@ class Admin(AIOHTTPService):
             "/admin/parsers/create/",
             ParserRequestCreateTemplateHandler,
             "parser_request_create_template",
+        ),
+        (
+            hdrs.METH_GET,
+            "/admin/parsers/auth_users/",
+            AuthUserDownloadCsvHandler,
+            "parser_request_auth_users_download"
         ),
         (
             hdrs.METH_GET,
