@@ -2,11 +2,11 @@ import logging
 
 from aiomisc import Service, entrypoint
 from aiomisc_log import basic_config
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from vk_parser.admin.arguments import parser
 from vk_parser.admin.deps import config_deps
 from vk_parser.admin.service import Admin
+from vk_parser.tasks.deleting_archive_accounts_task import delete_archive_accounts
 from vk_parser.tasks.resetting_send_accounts_task import reset_send_accounts
 from vk_parser.utils.scheduler import SchedulerService
 
@@ -24,6 +24,11 @@ def main() -> None:
                 "func": reset_send_accounts,
                 "trigger": "cron",
                 "hour": 3,
+            },
+            {
+                "func": delete_archive_accounts,
+                "trigger": "cron",
+                "hour": 4,
             },
         ],
     )
