@@ -22,6 +22,8 @@ from vk_parser.db.utils import inject_session
 from vk_parser.generals.models.vk_group import VkGroup
 from vk_parser.generals.models.vk_group_post import VkGroupPost
 from vk_parser.generals.models.vk_group_user import VkGroupUser
+from vk_parser.db.models.auth import AuthUser as AuthUserDb
+from vk_parser.generals.models.parser_request import DetailParserRequest
 
 log = logging.getLogger(__name__)
 
@@ -131,6 +133,24 @@ class VkStorage:
             )
             await session.execute(query)
             await session.commit()
+        except Exception as e:
+            await session.rollback()
+            raise e
+
+    @inject_session
+    async def get_parser_by_auth_user(
+        self,
+        session: AsyncSession,
+        user_id: int,
+    ) -> Sequence[ParserRequestDb]:
+        try:
+            query = (
+                select(ParserRequestDb)
+                .where(ParserRequestDb.user_id == user_id)
+                .order_by(ParserRequestDb.created_at.desc())
+            )
+            res = await session.scalars(query)
+            return res.fetchall()
         except Exception as e:
             await session.rollback()
             raise e

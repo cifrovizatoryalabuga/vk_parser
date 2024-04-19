@@ -463,6 +463,18 @@ class ParserRequestStorage(PaginationMixin):
         return output
 
     @inject_session
+    async def get_all_account_by_user(
+        self,
+        session: AsyncSession,
+        user_id: int,
+    ) -> Sequence[SendAccountsDb]:
+        query = select(SendAccountsDb).where(
+            SendAccountsDb.user_id == user_id,
+        )
+        result = await session.execute(query)
+        return result.scalars().all()
+
+    @inject_session
     async def get_random_account(
         self,
         session: AsyncSession,

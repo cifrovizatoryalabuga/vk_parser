@@ -5,7 +5,7 @@ from vk_parser.db.models.base import Base, TimestampMixin
 from vk_parser.db.utils import make_pg_enum
 from vk_parser.generals.enums import SendAccountStatus
 
-MAX_SUCCESSFUL_MESSAGES = 20
+MAX_SUCCESSFUL_MESSAGES = 10
 
 
 class SendAccounts(TimestampMixin, Base):
