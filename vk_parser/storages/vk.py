@@ -350,6 +350,7 @@ class VkStorage:
                 "login": user.split(":")[0],
                 "password": user.split(":")[1],
                 "secret_token": user.split(":")[2],
+                "proxy": user.split(":")[3],
                 "successful_messages": 0,
                 "error_status": "no_error",
                 "user_link": "vk.com/workwork",

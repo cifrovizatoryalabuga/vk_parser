@@ -13,6 +13,7 @@ class SendAccounts(BaseModel):
     login: str
     password: str
     secret_token: str
+    proxy: str
     successful_messages: int
     error_status: str
     user_link: str

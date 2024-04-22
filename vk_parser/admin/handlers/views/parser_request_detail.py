@@ -196,35 +196,53 @@ class ParserRequestDetailTemplateHandler(
         async with ClientSession() as session:
             for user in users:
                 try:
-                    await self.send_message_to_user(session, user, user_id)
+                    await self.send_message_to_user(
+                        session=session,
+                        user=user,
+                        user_id=user_id,
+                        max_attempts=5,
+                    )
                 except ConnectionError:
                     pass
 
                 await asyncio.sleep(10)
         return None
 
-    async def send_message_to_user(self, session, user: str, user_id: int) -> None:
-        random_account = choice(
-            await self.parser_request_storage.get_random_account(user_id)
-        )
-
-        async with session.post(
-            "https://api.vk.com/method/messages.send",
-            params={
-                "user_id": user.vk_user_id,
-                "access_token": random_account.secret_token,
-                "message": choice(
-                    await self.parser_request_storage.get_random_message(user_id)
-                ).message,
-                "random_id": 0,
-                "v": "5.131",
-            },
-        ) as response:
-            json_response = await response.json()
-
-        if "error" not in json_response:
-            await self.vk_storage.update_successful_messages_by_id(
-                random_account.id,
+    async def send_message_to_user(
+        self,
+        session,
+        user: str,
+        user_id: int,
+        max_attempts: int,
+    ) -> None:
+        for _ in range(max_attempts):
+            random_account = choice(
+                await self.parser_request_storage.get_random_account(user_id)
             )
+
+            async with session.get(random_account.proxy) as proxy_response:
+                if proxy_response.status == 200:
+                    async with session.post(
+                        "https://api.vk.com/method/messages.send",
+                        params={
+                            "user_id": user.vk_user_id,
+                            "access_token": random_account.secret_token,
+                            "message": choice(
+                                await self.parser_request_storage.get_random_message(user_id),
+                            ).message,
+                            "random_id": 0,
+                            "v": "5.131",
+                        },
+                        proxy=random_account.proxy,
+                    ) as response:
+                        json_response = await response.json()
+
+                    if "error" not in json_response:
+                        await self.vk_storage.update_successful_messages_by_id(
+                            random_account.id,
+                        )
+                    break
+                else:
+                    continue
 
         return None

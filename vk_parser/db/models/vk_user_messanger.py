@@ -19,6 +19,7 @@ class SendAccounts(TimestampMixin, Base):
     login: Mapped[str] = mapped_column(String(1024), nullable=False)
     password: Mapped[str] = mapped_column(String(1024), nullable=False)
     secret_token: Mapped[str] = mapped_column(String(1024), nullable=False)
+    proxy: Mapped[str] = mapped_column(String(1024), nullable=False)
     user_link: Mapped[str | None] = mapped_column(
         String(1024),
         nullable=True,
