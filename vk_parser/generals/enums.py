@@ -24,6 +24,13 @@ class RequestStatus(StrEnum):
 
 
 @unique
+class SendMessageStatus(StrEnum):
+    PROCESSING = "PROCESSING"
+    FAILED = "FAILED"
+    SUCCESSFUL = "SUCCESSFUL"
+
+
+@unique
 class UserRoles(StrEnum):
     ADMIN = "admin"
     USER = "user"

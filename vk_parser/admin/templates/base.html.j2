@@ -32,10 +32,11 @@
             <li><a href="/admin/">Админ панель</a></li>
           {% else %}
           {% endif %}
-          <li><a href="/admin/accounts/">Аккаунты для рассылки</a></li>
-          <li><a href="/admin/messages/">Сообщения для рассылок</a></li>
+          <li><a href="/admin/accounts/">Аккаунты</a></li>
+          <li><a href="/admin/messages/">Сообщения</a></li>
           <li><a href="/admin/parsers/">Список парсингов</a></li>
           <li><a href="/admin/parsers/create/">Новый парсинг</a></li>
+          <li><a href="/admin/send_messages/">Статусы сообщений</a></li>
           <li><a class="grey" href="/admin/">{{ user_info["login"] }} ({{ user_info["role"] }})</a></li>
           <li><a class="grey" href="/api/v1/logout/">Logout</a></li>
         {% else %}
@@ -50,10 +51,11 @@
             <li><a href="/admin/">Админ панель</a></li>
           {% else %}
           {% endif %}
-          <li><a href="/admin/accounts/">Аккаунты для рассылки</a></li>
-          <li><a href="/admin/messages/">Сообщения для рассылок</a></li>
+          <li><a href="/admin/accounts/">Аккаунты</a></li>
+          <li><a href="/admin/messages/">Сообщения</a></li>
           <li><a href="/admin/parsers/">Список парсингов</a></li>
           <li><a href="/admin/parsers/create/">Новый парсинг</a></li>
+          <li><a href="/admin/send_messages/">Статусы сообщений</a></li>
           <li><a href="/">{{ user_info["login"] }}</a></li>
           <li><a href="/api/v1/logout/">Logout</a></li>
         {% else %}

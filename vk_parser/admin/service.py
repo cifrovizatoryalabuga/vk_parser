@@ -52,6 +52,7 @@ from vk_parser.admin.handlers.views.redirect_to_admin import RedirectToAdminHand
 from vk_parser.admin.handlers.views.registration_user import (
     RegistrationUserTemplateHandler,
 )
+from vk_parser.admin.handlers.views.send_messages import SendMessageTemplateHandler
 from vk_parser.admin.handlers.views.vk_group_user_download_csv import (
     VkGroupUserDownloadCsvHandler,
 )
@@ -226,6 +227,12 @@ class Admin(AIOHTTPService):
             "/admin/registration/",
             RegistrationUserTemplateHandler,
             "registration_user",
+        ),
+        (
+            hdrs.METH_GET,
+            "/admin/send_messages/",
+            SendMessageTemplateHandler,
+            "send_messages",
         ),
         (
             hdrs.METH_GET,

@@ -12,18 +12,20 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from vk_parser.db.models.parser_request import ParserRequest as ParserRequestDb
+from vk_parser.db.models.send_message import SendMessages as SendMessagesDb
 from vk_parser.db.models.vk_group import VkGroup as VkGroupDb
 from vk_parser.db.models.vk_group_user import VkGroupUser as VkGroupUserDb
 from vk_parser.db.models.vk_user_messanger import Messages as MessagesDb
 from vk_parser.db.models.vk_user_messanger import SendAccounts as SendAccountsDb
 from vk_parser.db.utils import inject_session
-from vk_parser.generals.enums import ParserTypes, RequestStatus
+from vk_parser.generals.enums import ParserTypes, RequestStatus, SendMessageStatus
 from vk_parser.generals.models.pagination import PaginationResponse
 from vk_parser.generals.models.parser_request import (
     DetailParserRequest,
     ParserRequest,
     Result,
 )
+from vk_parser.generals.models.send_message import SendMessages
 from vk_parser.generals.models.vk_group_user import VkGroupUser
 from vk_parser.generals.models.vk_user_messanger import Messages, SendAccounts
 from vk_parser.storages.base import PaginationMixin
@@ -97,6 +99,24 @@ class ParserRequestStorage(PaginationMixin):
             page=page,
             page_size=page_size,
             model_type=DetailParserRequest,
+        )
+
+    async def send_messages_pagination_by_user(
+        self,
+        page: int,
+        page_size: int,
+        user_id: int,
+    ) -> PaginationResponse[SendMessages]:
+        query = (
+            select(SendMessagesDb)
+            .where(SendMessagesDb.user_id == user_id)
+            .order_by(SendMessagesDb.created_at.desc())
+        )
+        return await self._paginate(
+            query=query,
+            page=page,
+            page_size=page_size,
+            model_type=SendMessages,
         )
 
     async def admin_pagination(
@@ -488,3 +508,111 @@ class ParserRequestStorage(PaginationMixin):
         url,
     ) -> Exception:
         raise web.HTTPFound(url)
+
+    @inject_session
+    async def create_send_message(
+        self,
+        session: AsyncSession,
+        user_id: int,
+        parser_request_id: int,
+        task_name: str,
+        necessary_messages: int,
+    ) -> SendMessages | None:
+        query = (
+            insert(SendMessagesDb)
+            .values(
+                user_id=user_id,
+                parser_request_id=parser_request_id,
+                task_name=task_name,
+                successful_messages=0,
+                necessary_messages=necessary_messages,
+            )
+            .returning(SendMessagesDb)
+        )
+        try:
+            result: ScalarResult[SendMessagesDb] = await session.scalars(query)
+            await session.commit()
+        except DBAPIError:
+            log.warning(
+                "Error in creating send message: %s", task_name, exc_info=True,
+            )
+            return None
+        return SendMessages.model_validate(result.one())
+
+    @inject_session
+    async def update_send_successful_messages(
+        self,
+        session: AsyncSession,
+        user_id: int,
+        task_name: str,
+    ) -> SendMessages | None:
+        query = (
+            update(SendMessagesDb)
+            .where(
+                SendMessagesDb.user_id == user_id,
+                SendMessagesDb.task_name == task_name,
+                SendMessagesDb.status == SendMessageStatus.PROCESSING,
+            )
+            .values(
+                successful_messages=SendMessagesDb.successful_messages + 1,
+            )
+            .returning(SendMessagesDb)
+        )
+        try:
+            result = await session.scalars(query)
+            await session.commit()
+            return SendMessages.model_validate(result.one())
+        except DBAPIError as e:
+            log.warning("Error updating send message: %s", e)
+
+        return None
+
+    @inject_session
+    async def save_send_message_successful_result(
+        self,
+        session: AsyncSession,
+        id_: int,
+    ) -> SendMessages | None:
+        query = (
+            update(SendMessagesDb)
+            .where(SendMessagesDb.id == id_)
+            .values(
+                status=SendMessageStatus.SUCCESSFUL,
+                finished_at=datetime.now(),
+            )
+            .returning(SendMessagesDb)
+        )
+        try:
+            result = await session.scalars(query)
+            await session.commit()
+            return SendMessages.model_validate(result.one())
+        except DBAPIError as e:
+            log.warning("Error updating send message: %s", e)
+
+        return None
+
+    @inject_session
+    async def save_send_message_error_result(
+        self,
+        session: AsyncSession,
+        id_: int,
+        error_message: str,
+    ) -> SendMessages | None:
+        query = (
+            update(SendMessagesDb)
+            .where(SendMessagesDb.id == id_)
+            .values(
+                status=SendMessageStatus.FAILED,
+                finished_at=datetime.now(),
+                error_message=error_message,
+            )
+            .returning(SendMessagesDb)
+        )
+        try:
+            result = await session.scalars(query)
+            await session.commit()
+            return SendMessages.model_validate(result.one())
+        except DBAPIError as e:
+            log.warning("Error updating send message: %s", e)
+
+        return None
