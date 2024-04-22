@@ -235,6 +235,12 @@ class Admin(AIOHTTPService):
             "send_messages",
         ),
         (
+            hdrs.METH_POST,
+            "/admin/send_messages/",
+            SendMessageTemplateHandler,
+            "send_messages",
+        ),
+        (
             hdrs.METH_GET,
             "/admin/login/",
             LoginUserTemplateHandler,

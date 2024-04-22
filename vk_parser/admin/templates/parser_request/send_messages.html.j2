@@ -40,6 +40,11 @@
               <td>{{ item.created_at|datetime_format }}</td>
               <td>{% if item.finished_at %}{{ item.finished_at|datetime_format }}{% endif %}</td>
               <td><a href="/admin/parsers/{{ item.parser_request_id }}/">{% if item.error_message %}{{ item.error_message }}{% endif %}</a></td>
+              <td>
+                {% if item.status == send_message_status.PROCESSING.value %}
+                  <span class="delete-icon" onclick="toggleCancel('{{ item.id }}', '{{ item.task_name }}')">&#9726;</span>
+                {% endif %}
+              </td>
             </tr>
             {% endfor %}
           </tbody>
@@ -65,3 +70,30 @@
   </div>
 </div>
 {% endblock content %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+  function toggleCancel(sendMessageId, taskName) {
+    fetch('/admin/send_messages/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sendMessageId: sendMessageId,
+        taskName: taskName,
+      })
+    })
+    .then(response => {
+      console.log(response);
+      const newUrl = window.location.origin + window.location.pathname;
+      history.replaceState({}, document.title, newUrl);
+      location.reload();
+    })
+    .catch(error => {
+      console.error('Ошибка:', error);
+    });
+}
+</script>
+{% endblock %}
