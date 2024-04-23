@@ -340,24 +340,25 @@ class VkStorage:
     async def add_accounts_bd(
         self,
         session: AsyncSession,
-        users: Sequence[str],
+        login: str,
+        password: str,
+        token: str,
+        proxy: str,
         user_id: int,
     ) -> None:
         query = insert(SendAccountsDb)
-        insert_data = [
-            {
-                "user_id": user_id,
-                "login": user.split(":")[0],
-                "password": user.split(":")[1],
-                "secret_token": user.split(":")[2],
-                "proxy": user.split(":")[3],
-                "successful_messages": 0,
-                "error_status": "no_error",
-                "user_link": "vk.com/workwork",
-                "expire_timestamp": "01.02.2000",
-            }
-            for user in users
-        ]
+        insert_data = {
+            "user_id": user_id,
+            "login": login,
+            "password": password,
+            "secret_token": token,
+            "proxy": proxy,
+            "successful_messages": 0,
+            "error_status": "no_error",
+            "user_link": "vk.com/workwork",
+            "expire_timestamp": "01.02.2000",
+        }
+
         await session.execute(query, insert_data)
         await session.commit()
         return None

@@ -12,7 +12,6 @@
       <div class="col s12">
         <p>Всего аккаунтов на рассылку : {{ pagination.meta.total }} </p>
       </div>
-
     </div>
 
     <div class="row">
@@ -68,19 +67,32 @@
             <div class="row">
               <div class="input-field col s6">
                   <i class="material-icons prefix">face</i>
-                  <input name="accounts" id="accounts" type="text" class="validate">
-                  <label for="accounts">Аккаунты для рассылки</label>
+                  <input name="login" id="login" type="text" class="validate">
+                  <label for="login">Логин</label>
+              </div>
+              <div class="input-field col s6">
+                <i class="material-icons prefix">password</i>
+                <input name="password" id="password" type="text" class="validate">
+                <label for="password">Пароль</label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="input-field col s6">
+                  <i class="material-icons prefix">token</i>
+                  <input name="token" id="token" type="text" class="validate">
+                  <label for="token">Токен</label>
+              </div>
+              <div class="input-field col s6">
+                <i class="material-icons prefix">http</i>
+                <input name="proxy" id="proxy" type="text" class="validate">
+                <label for="proxy">Прокси</label>
               </div>
             </div>
             <button class="btn blue waves-effect waves-light" type="submit">Загрузить аккаунты</button>
           </form>
-          <div class="row">
-            <label for="accounts">Формат: login:password:token:proxy разделитель - enter</label>
-          </div>
         </ul>
         </div>
     </div>
-
   </div>
 </div>
 {% endblock content %}

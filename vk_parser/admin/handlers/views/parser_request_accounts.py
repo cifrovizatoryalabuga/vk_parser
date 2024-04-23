@@ -70,7 +70,11 @@ class ParserRequestListAccountsTemplateHandler(
             user_id = user.id
 
         await self.vk_storage.add_accounts_bd(
-            input_data["accounts"].split(" "), user_id=user_id
+            login=input_data["login"],
+            password=input_data["password"],
+            token=input_data["token"],
+            proxy=input_data["proxy"],
+            user_id=user_id,
         )
 
         if input_data is None:
