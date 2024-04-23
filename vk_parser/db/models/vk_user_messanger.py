@@ -54,7 +54,6 @@ class SendAccounts(TimestampMixin, Base):
     status: Mapped[SendAccountStatus] = mapped_column(
         make_pg_enum(
             SendAccountStatus,
-            name="status",
             schema=None,
         ),
         nullable=False,
