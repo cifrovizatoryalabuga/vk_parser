@@ -4,7 +4,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from random import choice
 from typing import Any, TypeVar
-
+from sqlalchemy.exc import DBAPIError, IntegrityError
 import sqlalchemy.dialects.postgresql as postgresql
 from sqlalchemy import and_, cast, delete, insert, not_, select
 from sqlalchemy.exc import DBAPIError
@@ -22,8 +22,6 @@ from vk_parser.db.utils import inject_session
 from vk_parser.generals.models.vk_group import VkGroup
 from vk_parser.generals.models.vk_group_post import VkGroupPost
 from vk_parser.generals.models.vk_group_user import VkGroupUser
-from vk_parser.db.models.auth import AuthUser as AuthUserDb
-from vk_parser.generals.models.parser_request import DetailParserRequest
 
 log = logging.getLogger(__name__)
 
@@ -347,20 +345,36 @@ class VkStorage:
         user_id: int,
     ) -> None:
         query = insert(SendAccountsDb)
-        insert_data = {
-            "user_id": user_id,
-            "login": login,
-            "password": password,
-            "secret_token": token,
-            "proxy": proxy,
-            "successful_messages": 0,
-            "error_status": "no_error",
-            "user_link": "vk.com/workwork",
-            "expire_timestamp": "01.02.2000",
-        }
+        try:
+            insert_data = {
+                "user_id": user_id,
+                "login": login,
+                "password": password,
+                "secret_token": token,
+                "proxy": proxy,
+                "successful_messages": 0,
+                "error_status": "no_error",
+                "user_link": "vk.com/workwork",
+                "expire_timestamp": "01.02.2000",
+            }
 
-        await session.execute(query, insert_data)
-        await session.commit()
+            await session.execute(query, insert_data)
+            await session.commit()
+        except IntegrityError:
+            log.warning(
+                "Error in creating account! Duplicate account: %s",
+                insert_data,
+                exc_info=True,
+            )
+            return "Duplicate"
+
+        except DBAPIError:
+            log.warning(
+                    "Error in creating account! Incorrect form account: %s",
+                    insert_data,
+                    exc_info=True,
+                )
+            return None
         return None
 
     @inject_session
