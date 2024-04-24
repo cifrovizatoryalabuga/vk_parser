@@ -22,7 +22,7 @@
             <tr>
                 <th>ID</th>
                 <th>Статус</th>
-                <th>Название группы</th>
+                <th>ID парсинга</th>
                 <th>Кол-во отправленных сообщений</th>
                 <th>Создано</th>
                 <th>Завершено</th>
@@ -35,7 +35,7 @@
             <tr class="waves-efffect">
               <td>{{ item.id }}</td>
               <td>{{ utils.badge(item.status) }}</td>
-              <td><a href="#">Скоро...</span></a></td>
+              <td><a href="/admin/parsers/{{ item.parser_request_id }}/">#{{ item.parser_request_id }}</span></a></td>
               <td>{{ item.successful_messages }}/{{ item.necessary_messages }}</td>
               <td>{{ item.created_at|datetime_format }}</td>
               <td>{% if item.finished_at %}{{ item.finished_at|datetime_format }}{% endif %}</td>

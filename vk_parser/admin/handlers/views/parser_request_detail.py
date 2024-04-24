@@ -179,7 +179,7 @@ class ParserRequestDetailTemplateHandler(
         )
 
         redirector_task = asyncio.create_task(
-            self.parser_request_storage.redirector(url="/")
+            self.parser_request_storage.redirector(url="/admin/send_messages/")
         )
 
         send_messages_task = asyncio.create_task(
