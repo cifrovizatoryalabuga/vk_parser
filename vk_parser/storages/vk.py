@@ -4,10 +4,10 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from random import choice
 from typing import Any, TypeVar
-from sqlalchemy.exc import DBAPIError, IntegrityError
+
 import sqlalchemy.dialects.postgresql as postgresql
 from sqlalchemy import and_, cast, delete, insert, not_, select
-from sqlalchemy.exc import DBAPIError
+from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from vk_parser.clients.vk import VkGroupMember, VkWallPost
@@ -19,6 +19,7 @@ from vk_parser.db.models.vk_user_messanger import MAX_SUCCESSFUL_MESSAGES
 from vk_parser.db.models.vk_user_messanger import Messages as MessagesDb
 from vk_parser.db.models.vk_user_messanger import SendAccounts as SendAccountsDb
 from vk_parser.db.utils import inject_session
+from vk_parser.generals.enums import SendAccountStatus
 from vk_parser.generals.models.vk_group import VkGroup
 from vk_parser.generals.models.vk_group_post import VkGroupPost
 from vk_parser.generals.models.vk_group_user import VkGroupUser
@@ -184,7 +185,7 @@ class VkStorage:
             account.successful_messages += 1
 
             if account.successful_messages >= MAX_SUCCESSFUL_MESSAGES:
-                account.is_disabled = True
+                account.status = SendAccountStatus.INACTIVE
 
             await session.commit()
         except Exception as e:
