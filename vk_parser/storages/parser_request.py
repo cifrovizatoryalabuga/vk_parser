@@ -507,7 +507,7 @@ class ParserRequestStorage(PaginationMixin):
     ) -> Sequence[SendAccountsDb]:
         query = select(SendAccountsDb).where(
             SendAccountsDb.user_id == user_id,
-            SendAccountsDb.is_disabled.is_(False),
+            SendAccountsDb.status == SendAccountStatus.ACTIVE,
         )
         result = await session.execute(query)
         return result.scalars().all()
