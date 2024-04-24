@@ -31,6 +31,13 @@ class SendMessageStatus(StrEnum):
 
 
 @unique
+class SendAccountStatus(StrEnum):
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    ARCHIVE = "ARCHIVE"
+
+
+@unique
 class UserRoles(StrEnum):
     ADMIN = "admin"
     USER = "user"

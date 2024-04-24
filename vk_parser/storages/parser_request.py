@@ -18,7 +18,12 @@ from vk_parser.db.models.vk_group_user import VkGroupUser as VkGroupUserDb
 from vk_parser.db.models.vk_user_messanger import Messages as MessagesDb
 from vk_parser.db.models.vk_user_messanger import SendAccounts as SendAccountsDb
 from vk_parser.db.utils import inject_session
-from vk_parser.generals.enums import ParserTypes, RequestStatus, SendMessageStatus
+from vk_parser.generals.enums import (
+    ParserTypes,
+    RequestStatus,
+    SendAccountStatus,
+    SendMessageStatus,
+)
 from vk_parser.generals.models.pagination import PaginationResponse
 from vk_parser.generals.models.parser_request import (
     DetailParserRequest,
@@ -79,8 +84,22 @@ class ParserRequestStorage(PaginationMixin):
         session: AsyncSession,
         user_id: int,
     ) -> None:
-        query = delete(SendAccountsDb).where(SendAccountsDb.user_id == user_id)
-        await session.execute(query)
+        account = await session.execute(
+            select(SendAccountsDb).where(SendAccountsDb.user_id == user_id)
+        ).scalar()
+
+        if account.status == SendAccountStatus.INACTIVE:
+            await session.execute(
+                update(SendAccountsDb)
+                .where(SendAccountsDb.id == account.id)
+                .values(status=SendAccountStatus.ARCHIVE)
+            )
+        else:
+            await session.execute(
+                delete(SendAccountsDb)
+                .where(SendAccountsDb.id == account.id)
+            )
+
         await session.commit()
 
     async def admin_pagination_by_user(

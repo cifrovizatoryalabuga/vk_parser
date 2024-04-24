@@ -208,10 +208,11 @@ class ParserRequestDetailTemplateHandler(
                 for user in users:
                     try:
                         await self.send_message_to_user(
-                            session,
-                            user,
-                            user_id,
-                            task_name,
+                            session=session,
+                            user=user,
+                            user_id=user_id,
+                            task_name=task_name,
+                            max_attempts=5,
                         )
                     except ConnectionError:
                         pass
@@ -233,32 +234,42 @@ class ParserRequestDetailTemplateHandler(
         user: str,
         user_id: int,
         task_name: str,
+        max_attempts: int,
     ) -> None:
-        random_account = choice(
-            await self.parser_request_storage.get_random_account(user_id)
-        )
-
-        async with session.post(
-            "https://api.vk.com/method/messages.send",
-            params={
-                "user_id": user.vk_user_id,
-                "access_token": random_account.secret_token,
-                "message": choice(
-                    await self.parser_request_storage.get_random_message(user_id)
-                ).message,
-                "random_id": 0,
-                "v": "5.131",
-            },
-        ) as response:
-            json_response = await response.json()
-
-        if "error" not in json_response:
-            await self.vk_storage.update_successful_messages_by_id(
-                account_id=random_account.id,
+        for _ in range(max_attempts):
+            random_account = choice(
+                await self.parser_request_storage.get_random_account(user_id)
             )
-            await self.parser_request_storage.update_send_successful_messages(
-                user_id=user_id,
-                task_name=task_name,
-            )
+
+            proxy_url = f"http://{random_account.proxy}"
+
+            async with session.get("http://httpbin.org/", proxy=proxy_url) as proxy_response:
+                if proxy_response.status == 200:
+                    async with session.post(
+                        "https://api.vk.com/method/messages.send",
+                        params={
+                            "user_id": user.vk_user_id,
+                            "access_token": random_account.secret_token,
+                            "message": choice(
+                                await self.parser_request_storage.get_random_message(user_id),
+                            ).message,
+                            "random_id": 0,
+                            "v": "5.131",
+                        },
+                        proxy=proxy_url,
+                    ) as response:
+                        json_response = await response.json()
+
+                    if "error" not in json_response:
+                        await self.vk_storage.update_successful_messages_by_id(
+                            account_id=random_account.id,
+                        )
+                        await self.parser_request_storage.update_send_successful_messages(
+                            user_id=user_id,
+                            task_name=task_name,
+                        )
+                    break
+                else:
+                    continue
 
         return None
