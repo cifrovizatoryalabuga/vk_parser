@@ -28,7 +28,6 @@ class SendMessages(TimestampMixin, Base):
     status: Mapped[SendMessageStatus] = mapped_column(
         make_pg_enum(
             SendMessageStatus,
-            name="status",
             schema=None,
         ),
         nullable=False,
