@@ -33,7 +33,17 @@ def users_to_csv(users: Sequence[VkGroupUser]) -> str:
     output = io.StringIO()
     writer = csv.writer(output, quoting=csv.QUOTE_NONNUMERIC)
     writer.writerow(
-        ["vk_id", "first_name", "last_name", "sex", "university_name", "city", "birth_date", "last_visit_vk_date"]
+        [
+            "vk_id",
+            "first_name",
+            "last_name",
+            "sex",
+            "mobile_phone",
+            "university_name",
+            "city",
+            "birth_date",
+            "last_visit_vk_date",
+        ],
     )
     for user in users:
         writer.writerow(
@@ -42,6 +52,7 @@ def users_to_csv(users: Sequence[VkGroupUser]) -> str:
                 user.first_name,
                 user.last_name,
                 user.sex,
+                user.mobile_phone,
                 user.university_name,
                 user.city,
                 user.birth_date.strftime("%d.%m.%Y") if user.birth_date else "",

@@ -94,6 +94,7 @@ class VkStorage:
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "sex": sex_convert_vk(user.sex),
+                "mobile_phone": user.mobile_phone,
                 "university_name": user.university_name,
                 "city": city_convert_vk(user.city),
                 "last_visit_vk_date": user.last_visit_vk_date,
