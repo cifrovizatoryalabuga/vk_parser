@@ -54,7 +54,7 @@ class VkGroupMember(BaseModel):
     last_name: str | None = None
     last_seen: VkLastSeen | None = None
     sex: int | None = Field(alias="sex", default=None)
-    mobile_phone: str | None = Field(alias="mobile_phone", default=None)
+    mobile_phone: str | None = Field(alias="home_phone", default=None)
     city: dict | None = Field(alias="city", default=None)
     university_name: str | None = Field(default=None)
     photo_100: str | None = Field(alias="photo_100", default="https://vk.com/images/camera_100.png")
