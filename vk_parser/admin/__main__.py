@@ -7,6 +7,7 @@ from vk_parser.admin.arguments import parser
 from vk_parser.admin.deps import config_deps
 from vk_parser.admin.service import Admin
 from vk_parser.tasks.deleting_archive_accounts_task import delete_archive_accounts
+from vk_parser.tasks.deleting_old_send_messages import delete_old_send_messages
 from vk_parser.tasks.resetting_send_accounts_task import reset_send_accounts
 from vk_parser.utils.scheduler import SchedulerService
 
@@ -29,6 +30,12 @@ def main() -> None:
                 "func": delete_archive_accounts,
                 "trigger": "cron",
                 "hour": 4,
+            },
+            {
+                "func": delete_old_send_messages,
+                "trigger": "cron",
+                "hour": 5,
+                "day_of_week": "sun",
             },
         ],
     )

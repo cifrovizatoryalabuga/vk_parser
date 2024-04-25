@@ -18,5 +18,8 @@ async def reset_send_accounts():
         async with session.begin():
             await session.execute(
                 update(SendAccountsDb)
-                .values(status=SendAccountStatus.ACTIVE, successful_messages=0)
+                .values(
+                    status=SendAccountStatus.ACTIVE,
+                    successful_messages=0,
+                )
             )
