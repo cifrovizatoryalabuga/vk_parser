@@ -39,6 +39,9 @@ class VkGroupUser(TimestampMixin, Base):
     mobile_phone: Mapped[str | None] = mapped_column(
         String(1024), nullable=True,
     )
+    home_phone: Mapped[str | None] = mapped_column(
+        String(1024), nullable=True,
+    )
     university_name: Mapped[str | None] = mapped_column(
         String(1024), nullable=True, index=True
     )

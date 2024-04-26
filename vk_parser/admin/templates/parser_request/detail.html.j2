@@ -131,6 +131,7 @@
                 <th>Имя</th>
                 <th>Пол</th>
                 <th>Телефон</th>
+                <th>Доп. телефон</th>
                 <th>Университет</th>
                 <th>Город</th>
                 <th>Дата рождения</th>
@@ -147,6 +148,7 @@
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.last_name }}</span></a></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.sex }}</a></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.mobile_phone }}</a></td>
+                <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.home_phone }}</a></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.university_name }}</a></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.city }}</a></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
