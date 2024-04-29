@@ -522,7 +522,7 @@ class Vk(BaseHttpClient):
             },
         )
 
-    @asyncretry(max_tries=8, pause=1)
+    @asyncretry(max_tries=2, pause=1)
     async def get_conversations(
         self,
         fields: str = "",
