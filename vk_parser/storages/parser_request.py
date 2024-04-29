@@ -10,6 +10,7 @@ from aiohttp import web
 from sqlalchemy import ScalarResult, delete, func, insert, select, update
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 
 from vk_parser.db.models.parser_request import ParserRequest as ParserRequestDb
 from vk_parser.db.models.send_message import SendMessages as SendMessagesDb
@@ -84,21 +85,18 @@ class ParserRequestStorage(PaginationMixin):
         session: AsyncSession,
         user_id: int,
     ) -> None:
-        account = await session.execute(
-            select(SendAccountsDb).where(SendAccountsDb.user_id == user_id)
-        ).scalar()
+        await session.execute(
+            update(SendAccountsDb)
+            .where(SendAccountsDb.user_id == user_id)
+            .where(SendAccountsDb.status == SendAccountStatus.INACTIVE)
+            .values(status=SendAccountStatus.ARCHIVE)
+        )
 
-        if account.status == SendAccountStatus.INACTIVE:
-            await session.execute(
-                update(SendAccountsDb)
-                .where(SendAccountsDb.id == account.id)
-                .values(status=SendAccountStatus.ARCHIVE)
-            )
-        else:
-            await session.execute(
-                delete(SendAccountsDb)
-                .where(SendAccountsDb.id == account.id)
-            )
+        await session.execute(
+            delete(SendAccountsDb)
+            .where(SendAccountsDb.user_id == user_id)
+            .where(SendAccountsDb.status != SendAccountStatus.INACTIVE)
+        )
 
         await session.commit()
 
