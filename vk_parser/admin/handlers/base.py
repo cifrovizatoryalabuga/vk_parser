@@ -8,11 +8,12 @@ from aiohttp.web import Request
 from aiohttp.web_exceptions import HTTPBadRequest
 from pydantic import BaseModel, ValidationError
 
+from vk_parser.clients.vk import Vk
 from vk_parser.generals.models.pagination import PaginationParams
+from vk_parser.storages.authorization import AuthorizationStorage
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.ping import PingStorage
 from vk_parser.storages.vk import VkStorage
-from vk_parser.storages.authorization import AuthorizationStorage
 
 log = logging.getLogger(__name__)
 
@@ -37,6 +38,10 @@ class DependenciesMixin(BaseHttpMixin):
     @property
     def vk_storage(self) -> VkStorage:
         return self.request.app["vk_storage"]
+
+    @property
+    def vk_client(self) -> Vk:
+        return self.request.app["vk_client"]
 
     @property
     def auth_storage(self) -> AuthorizationStorage:

@@ -8,11 +8,12 @@ from typing import Any
 
 import aiohttp_jinja2
 import jwt
-from aiohttp import ClientSession, web
+from aiohttp import web
 from aiohttp.web_exceptions import HTTPBadRequest, HTTPNotFound
 
 from vk_parser.admin.handlers.base import CreateMixin, DependenciesMixin, ListMixin
 from vk_parser.generals.enums import ParserTypes
+from vk_parser.generals.exceptions import VkParserTooManyRequestsException
 from vk_parser.generals.models.vk_group_user import VkGroupUser
 
 
@@ -204,20 +205,17 @@ class ParserRequestDetailTemplateHandler(
         send_message_id: int,
     ) -> None:
         try:
-            async with ClientSession() as session:
-                for user in users:
-                    try:
-                        await self.send_message_to_user(
-                            session=session,
-                            user=user,
-                            user_id=user_id,
-                            task_name=task_name,
-                            max_attempts=5,
-                        )
-                    except ConnectionError:
-                        pass
+            for user in users:
+                try:
+                    await self.send_message_to_user(
+                        user=user,
+                        user_id=user_id,
+                        task_name=task_name,
+                    )
+                except ConnectionError:
+                    pass
 
-                    await asyncio.sleep(10)
+                await asyncio.sleep(10)
             await self.parser_request_storage.save_send_message_successful_result(
                 id_=send_message_id,
             )
@@ -230,46 +228,31 @@ class ParserRequestDetailTemplateHandler(
 
     async def send_message_to_user(
         self,
-        session,
         user: str,
         user_id: int,
         task_name: str,
-        max_attempts: int,
     ) -> None:
-        for _ in range(max_attempts):
-            random_account = choice(
-                await self.parser_request_storage.get_random_account(user_id)
+        random_account = choice(
+            await self.parser_request_storage.get_random_account(user_id)
+        )
+
+        try:
+            await self.vk_client.post_messages_send(
+                user_id=user.vk_user_id,
+                message=choice(
+                    await self.parser_request_storage.get_random_message(user_id),
+                ).message,
+                access_token=random_account.secret_token,
+                proxy=f"http://{random_account.proxy}",
             )
-
-            proxy_url = f"http://{random_account.proxy}"
-
-            async with session.get("http://httpbin.org/", proxy=proxy_url) as proxy_response:
-                if proxy_response.status == 200:
-                    async with session.post(
-                        "https://api.vk.com/method/messages.send",
-                        params={
-                            "user_id": user.vk_user_id,
-                            "access_token": random_account.secret_token,
-                            "message": choice(
-                                await self.parser_request_storage.get_random_message(user_id),
-                            ).message,
-                            "random_id": 0,
-                            "v": "5.131",
-                        },
-                        proxy=proxy_url,
-                    ) as response:
-                        json_response = await response.json()
-
-                    if "error" not in json_response:
-                        await self.vk_storage.update_successful_messages_by_id(
-                            account_id=random_account.id,
-                        )
-                        await self.parser_request_storage.update_send_successful_messages(
-                            user_id=user_id,
-                            task_name=task_name,
-                        )
-                    break
-                else:
-                    continue
+            await self.vk_storage.update_successful_messages_by_id(
+                account_id=random_account.id,
+            )
+            await self.parser_request_storage.update_send_successful_messages(
+                user_id=user_id,
+                task_name=task_name,
+            )
+        except VkParserTooManyRequestsException:
+            pass
 
         return None

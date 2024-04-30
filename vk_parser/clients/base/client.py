@@ -35,12 +35,19 @@ class BaseHttpClient:
         url: URL,
         handlers: ResponseHandlersType,
         timeout: TimeoutType = DEFAULT_TIMEOUT,
+        proxy: str = None,
         **kwargs: Any,
-    ) -> Any:
+    ) -> Any | None:
+        if proxy:
+            async with self._session.get("http://httpbin.org/", proxy=proxy) as proxy_response:
+                if proxy_response.status != 200:
+                    return None
+
         async with self._session.request(
             method=method,
             url=url,
             timeout=get_timeout(timeout),
+            proxy=proxy,
             **kwargs,
         ) as resp:
             return await apply_handler(

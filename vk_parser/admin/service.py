@@ -56,6 +56,7 @@ from vk_parser.admin.handlers.views.send_messages import SendMessageTemplateHand
 from vk_parser.admin.handlers.views.vk_group_user_download_csv import (
     VkGroupUserDownloadCsvHandler,
 )
+from vk_parser.clients.vk import Vk
 from vk_parser.storages.authorization import AuthorizationStorage
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.ping import PingStorage
@@ -76,6 +77,7 @@ class Admin(AIOHTTPService):
         "parser_request_storage",
         "ping_storage",
         "vk_storage",
+        "vk_client",
         "amqp_master",
         "auth_storage",
     )
@@ -83,6 +85,7 @@ class Admin(AIOHTTPService):
     parser_request_storage: ParserRequestStorage
     ping_storage: PingStorage
     vk_storage: VkStorage
+    vk_client: Vk
     amqp_master: Master
     auth_storage: AuthorizationStorage
 

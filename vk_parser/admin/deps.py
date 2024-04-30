@@ -8,11 +8,13 @@ from aio_pika.patterns import Master
 from aiomisc_dependency import dependency
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
+from vk_parser.clients.vk import VK_API_BASE_URL, Vk
 from vk_parser.db.utils import create_async_engine, create_async_session_factory
+from vk_parser.storages.authorization import AuthorizationStorage
 from vk_parser.storages.parser_request import ParserRequestStorage
 from vk_parser.storages.ping import PingStorage
 from vk_parser.storages.vk import VkStorage
-from vk_parser.storages.authorization import AuthorizationStorage
+from vk_parser.utils.http import create_web_session
 
 log = logging.getLogger(__name__)
 
@@ -44,6 +46,16 @@ def config_deps(args: Namespace) -> None:
         session_factory: async_sessionmaker[AsyncSession],
     ) -> VkStorage:
         return VkStorage(session_factory=session_factory)
+
+    @dependency
+    async def vk_client() -> AsyncGenerator[Vk, None]:
+        async with create_web_session() as session:
+            yield Vk(
+                url=VK_API_BASE_URL,
+                session=session,
+                vk_api_service_token=args.vk_api_service_token,
+                vk_api_version=args.vk_api_version,
+            )
 
     @dependency
     def auth_storage(

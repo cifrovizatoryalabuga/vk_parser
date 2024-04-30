@@ -304,6 +304,16 @@ async def parse_group_members(data: dict[str, Any]) -> VkGroupMembers | None:
 
 
 @parse_vk_response
+async def parse_messages_send(data: dict[str, Any]) -> Any | None:
+    try:
+        messages_send = data["response"]
+    except KeyError:
+        log.warning("Got key error with data %s", data)
+        return None
+    return messages_send
+
+
+@parse_vk_response
 async def parse_conversations(data: dict[str, Any]) -> VkMessagesConversations | None:
     try:
         conversations = VkMessagesConversations(**data["response"])
@@ -346,6 +356,12 @@ class Vk(BaseHttpClient):
     GET_GROUP_MEMBERS_HANDLERS: ResponseHandlersType = MappingProxyType(
         {
             HTTPStatus.OK: parse_group_members,
+        }
+    )
+
+    GET_MESSAGES_SEND_HANDLERS: ResponseHandlersType = MappingProxyType(
+        {
+            HTTPStatus.OK: parse_messages_send,
         }
     )
 
@@ -547,3 +563,34 @@ class Vk(BaseHttpClient):
                 **self._default_kwargs,
             }
         )
+
+    @asyncretry(max_tries=2, pause=1)
+    async def post_messages_send(
+        self,
+        user_id: int,
+        message: str,
+        access_token: str,
+        proxy: str,
+        random_id: int = 0,
+        timeout: TimeoutType = DEFAULT_TIMEOUT,
+    ) -> Any | None:
+        log.info(
+            "Request VK API method: messages.send %s %s",
+            user_id,
+            message,
+        )
+        await self._make_req(
+            method=hdrs.METH_POST,
+            url=self._url / "method/messages.send",
+            handlers=self.GET_MESSAGES_SEND_HANDLERS,
+            timeout=timeout,
+            params={
+                **self._default_kwargs,
+                "user_id": user_id,
+                "message": message,
+                "random_id": random_id,
+                "access_token": access_token,
+            },
+            proxy=proxy,
+        )
+        return None
