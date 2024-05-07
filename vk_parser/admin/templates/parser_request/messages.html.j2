@@ -52,11 +52,16 @@
             {%endwith%}
             <form class="col s12" method="post">
                 <div class="row">
-                <div class="input-field col s7">
-                    <i class="material-icons prefix">face</i>
-                    <textarea name="messages" id="messages" class="materialize-textarea validate"></textarea>
-                    <label for="messages">Сообщения для рассылки</label>
-                </div>
+                  <div class="input-field col s7">
+                      <i class="material-icons prefix">face</i>
+                      <textarea name="message" id="message" class="materialize-textarea validate"></textarea>
+                      <label for="message">Сообщения для рассылки</label>
+                  </div>
+                  <div class="input-field col s7">
+                    <i class="material-icons prefix">face</i>                 
+                    <input type="number" id="order" name="order" />
+                    <label for="order">Порядок для рассылки</label>
+                  </div>
                 </div>
                 <button class="btn blue waves-effect waves-light" type="submit">Загрузить сообщения</button>
             </form>
