@@ -1,8 +1,4 @@
-from datetime import datetime
-
 from pydantic import BaseModel, ConfigDict
-
-from vk_parser.generals.enums import MessagesStatus
 
 
 class SendAccounts(BaseModel):
@@ -25,4 +21,5 @@ class Messages(BaseModel):
 
     id: int
     user_id: int
+    order: int
     message: str

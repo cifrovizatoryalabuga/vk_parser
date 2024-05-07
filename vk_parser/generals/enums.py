@@ -24,6 +24,13 @@ class RequestStatus(StrEnum):
 
 
 @unique
+class VkDialogsStatus(StrEnum):
+    PROCESSING = "PROCESSING"
+    FAILED = "FAILED"
+    SUCCESSFUL = "SUCCESSFUL"
+
+
+@unique
 class SendMessageStatus(StrEnum):
     PROCESSING = "PROCESSING"
     FAILED = "FAILED"
