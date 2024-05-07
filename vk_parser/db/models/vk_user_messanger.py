@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, ForeignKey, String, Text
+from sqlalchemy import BigInteger, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from vk_parser.db.models.base import Base, TimestampMixin
@@ -73,6 +73,10 @@ class Messages(TimestampMixin, Base):
         ForeignKey("auth_user.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
+    )
+    order: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
     )
     message: Mapped[str] = mapped_column(
         Text,
