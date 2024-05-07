@@ -1,11 +1,15 @@
-from sqlalchemy import BigInteger, ForeignKey, String
+from datetime import datetime
+
+from sqlalchemy import BigInteger, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
 from vk_parser.db.models.base import Base, TimestampMixin
+from vk_parser.db.utils import make_pg_enum
+from vk_parser.generals.enums import VkDialogsStatus
 
 
-class VkMessages(TimestampMixin, Base):
-    """Отправленные сообщения пользователям в ВК"""
+class VkDialogs(TimestampMixin, Base):
+    """Диалоги с пользователям в ВК"""
 
     id: Mapped[int] = mapped_column(
         BigInteger,
@@ -23,15 +27,36 @@ class VkMessages(TimestampMixin, Base):
         nullable=False,
         index=True,
     )
-    vk_message_id: Mapped[int] = mapped_column(
-        BigInteger,
+    status: Mapped[VkDialogsStatus] = mapped_column(
+        make_pg_enum(
+            VkDialogsStatus,
+            schema=None,
+        ),
         nullable=False,
+        server_default=VkDialogsStatus.PROCESSING.value,
     )
-    vk_conversation_message_id: Mapped[int] = mapped_column(
-        BigInteger,
-        nullable=False,
-    )
-    error_status: Mapped[str | None] = mapped_column(
-        String(1024),
+    finished_at: Mapped[datetime | None] = mapped_column(
+        DateTime(),
         nullable=True,
+    )
+
+
+class VkMessages(TimestampMixin, Base):
+    """Отправленные сообщения пользователям в ВК"""
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+    )
+    dialog_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("vk_dialogs.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    message_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("messages.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
