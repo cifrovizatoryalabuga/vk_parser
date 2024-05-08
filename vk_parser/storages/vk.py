@@ -23,6 +23,7 @@ from vk_parser.generals.enums import SendAccountStatus
 from vk_parser.generals.models.vk_group import VkGroup
 from vk_parser.generals.models.vk_group_post import VkGroupPost
 from vk_parser.generals.models.vk_group_user import VkGroupUser
+from vk_parser.generals.models.vk_user_messanger import Messages
 
 log = logging.getLogger(__name__)
 
@@ -384,23 +385,22 @@ class VkStorage:
     async def add_messages_bd(
         self,
         session: AsyncSession,
-        messages: Sequence[str],
+        message: str,
+        order: int,
         user_id: int,
-    ) -> None:
-        query = insert(MessagesDb)
-        insert_data = [
-            {
-                "user_id": user_id,
-                "message": message,
-            }
-            for message in messages
-        ]
-        try:
-            await session.execute(query, insert_data)
-            await session.commit()
-        except DBAPIError:
-            log.warning("Error save error")
-        return None
+    ) -> Messages:
+        query = (
+            insert(MessagesDb)
+            .values(
+                user_id=user_id,
+                order=int(order),
+                message=message,
+            )
+            .returning(MessagesDb)
+        )
+        obj = (await session.scalars(query)).one()
+        await session.commit()
+        return Messages.model_validate(obj)
 
     @inject_session
     async def get_random_account(
