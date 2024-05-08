@@ -38,16 +38,17 @@ class BaseHttpClient:
         proxy: str = None,
         **kwargs: Any,
     ) -> Any | None:
-        if proxy:
-            async with self._session.get("http://httpbin.org/", proxy=proxy) as proxy_response:
-                if proxy_response.status != 200:
-                    return None
+        proxy_url = f"http://{proxy}" if proxy else None
+
+        async with self._session.get("http://httpbin.org/", proxy=proxy_url) as proxy_response:
+            if proxy_response.status != 200:
+                return None
 
         async with self._session.request(
             method=method,
             url=url,
             timeout=get_timeout(timeout),
-            proxy=proxy,
+            proxy=proxy_url,
             **kwargs,
         ) as resp:
             return await apply_handler(
