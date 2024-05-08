@@ -24,6 +24,7 @@
               <thead>
                 <tr>
                     <th>Сообщения</th>
+                    <th>Порядок</th>
                 </tr>
               </thead>
 
@@ -31,35 +32,36 @@
                 {% for item in pagination.items %}
                 <tr class="waves-efffect">
                   <td>{{ item.message|replace('\n', '<br>') }}</td>
+                  <td>{{ item.order }}</td>
                 </tr>
                 {% endfor %}
               </tbody>
             </table>
           <ul class="pagination">
             {% with page = pagination.meta.page, page_size = pagination.meta.page_size, pages = pagination.meta.pages %}
-            {% if page != 1 %}
-            <li class="waves-effect">
-              <a href="/admin/messages/?page_size={{ page_size }}&page={{ page - 1 }}">
-              <i class="material-icons">chevron_left</i></a>
-              </li>
-            {%endif%}
-            <li class="active"><a href="#!">{{ page }}</a></li>
-            {% if page != pages%}
-            <li class="waves-effect">
-            <a href="/admin/messages/?page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
-            </li>
-            {%endif%}
+              {% if page != 1 %}
+                <li class="waves-effect">
+                  <a href="/admin/messages/?page_size={{ page_size }}&page={{ page - 1 }}">
+                  <i class="material-icons">chevron_left</i></a>
+                  </li>
+              {%endif%}
+              <li class="active"><a href="#!">{{ page }}</a></li>
+              {% if page != pages%}
+                <li class="waves-effect">
+                  <a href="/admin/messages/?page_size={{ page_size }}&page={{ page + 1 }}"><i class="material-icons">chevron_right</i></a>
+                </li>
+              {%endif%}
             {%endwith%}
             <form class="col s12" method="post">
                 <div class="row">
                   <div class="input-field col s7">
-                      <i class="material-icons prefix">face</i>
+                      <i class="material-icons prefix">message</i>
                       <textarea name="message" id="message" class="materialize-textarea validate"></textarea>
                       <label for="message">Сообщения для рассылки</label>
                   </div>
                   <div class="input-field col s7">
-                    <i class="material-icons prefix">face</i>                 
-                    <input type="number" id="order" name="order" />
+                    <i class="material-icons prefix">list</i>                 
+                    <input type="number" id="order" name="order" min="1" />
                     <label for="order">Порядок для рассылки</label>
                   </div>
                 </div>
