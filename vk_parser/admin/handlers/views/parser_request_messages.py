@@ -53,7 +53,9 @@ class ParserRequestListMessagesTemplateHandler(
             user_id = user.id
 
         await self.vk_storage.add_messages_bd(
-            input_data["messages"].split("{}"), user_id=user_id
+            message=input_data["message"],
+            user_id=user_id,
+            order=input_data["order"],
         )
 
         if input_data is None:
