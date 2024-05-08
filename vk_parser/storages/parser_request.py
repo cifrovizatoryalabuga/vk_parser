@@ -10,12 +10,13 @@ from aiohttp import web
 from sqlalchemy import ScalarResult, delete, func, insert, select, update
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from sqlalchemy.orm.exc import NoResultFound
 
 from vk_parser.db.models.parser_request import ParserRequest as ParserRequestDb
 from vk_parser.db.models.send_message import SendMessages as SendMessagesDb
 from vk_parser.db.models.vk_group import VkGroup as VkGroupDb
 from vk_parser.db.models.vk_group_user import VkGroupUser as VkGroupUserDb
+from vk_parser.db.models.vk_messages import VkDialogs as VkDialogsDb
+from vk_parser.db.models.vk_messages import VkMessages as VkMessagesDb
 from vk_parser.db.models.vk_user_messanger import Messages as MessagesDb
 from vk_parser.db.models.vk_user_messanger import SendAccounts as SendAccountsDb
 from vk_parser.db.utils import inject_session
@@ -33,6 +34,7 @@ from vk_parser.generals.models.parser_request import (
 )
 from vk_parser.generals.models.send_message import SendMessages
 from vk_parser.generals.models.vk_group_user import VkGroupUser
+from vk_parser.generals.models.vk_messages import VkDialogs, VkMessages
 from vk_parser.generals.models.vk_user_messanger import Messages, SendAccounts
 from vk_parser.storages.base import PaginationMixin
 
@@ -515,8 +517,12 @@ class ParserRequestStorage(PaginationMixin):
         self,
         session: AsyncSession,
         user_id: int,
+        order: int,
     ) -> Sequence[MessagesDb]:
-        query = select(MessagesDb).where(MessagesDb.user_id == user_id)
+        query = select(MessagesDb).where(
+            MessagesDb.user_id == user_id,
+            MessagesDb.order == order,
+        )
         result = await session.execute(query)
         return result.scalars().all()
 
@@ -633,3 +639,47 @@ class ParserRequestStorage(PaginationMixin):
             log.warning("Error updating send message: %s", e)
 
         return None
+
+    @inject_session
+    async def create_vk_dialog(
+        self,
+        session: AsyncSession,
+        send_account_id: int,
+        vk_group_user_id: int,
+    ) -> VkDialogs | None:
+        query = (
+            insert(VkDialogsDb)
+            .values(
+                send_account_id=int(send_account_id),
+                vk_group_user_id=int(vk_group_user_id),
+            )
+            .returning(VkDialogsDb)
+        )
+        obj = (await session.scalars(query)).one()
+        await session.commit()
+        return VkDialogs.model_validate(obj)
+
+    @inject_session
+    async def create_vk_message(
+        self,
+        session: AsyncSession,
+        dialog_id: int,
+        message_id: int,
+    ) -> VkMessages | None:
+        query = (
+            insert(VkMessagesDb)
+            .values(
+                dialog_id=dialog_id,
+                message_id=message_id,
+            )
+            .returning(VkMessagesDb)
+        )
+        try:
+            result: ScalarResult[VkMessagesDb] = await session.scalars(query)
+            await session.commit()
+        except DBAPIError:
+            log.warning(
+                "Error in creating vk messages: %s", dialog_id, exc_info=True,
+            )
+            return None
+        return VkMessages.model_validate(result.one())
