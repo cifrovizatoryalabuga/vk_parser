@@ -128,7 +128,6 @@ class VkPushSettings(BaseModel):
 
 class VkCanWrite(BaseModel):
     allowed: bool
-    reason: int
 
 
 class VkGeoPlace(BaseModel):
@@ -187,6 +186,23 @@ class VkConversation(BaseModel):
     chat_settings: Sequence[VkChatSettings]
 
 
+class VkConversationById(BaseModel):
+    peer: VkPeer
+    last_message_id: int
+    last_conversation_message_id: int
+    in_read: int
+    out_read: int
+    in_read_cmid: int
+    out_read_cmid: int
+    version: int
+    is_marked_unread: bool
+    important: bool
+    can_write: VkCanWrite
+    can_send_money: bool
+    can_receive_money: bool
+    peer_flags: int
+
+
 class VkAction(BaseModel):
     type: str
     member_id: int
@@ -223,6 +239,22 @@ class VkMessage(BaseModel):
     is_mentioned_user: bool
 
 
+class VkMessagesConversationById(BaseModel):
+    id: int
+    date: int
+    from_id: int
+    out: int
+    version: int
+    attachments: list
+    conversation_message_id: int
+    fwd_messages: list[int]
+    important: bool
+    is_hidden: bool
+    peer_id: int
+    random_id: int
+    text: str
+
+
 class VkMessagesConversation(BaseModel):
     conversation: Sequence[VkConversation]
     last_message: Sequence[VkMessage]
@@ -241,6 +273,16 @@ class VkMessagesConversations(BaseModel):
     count: int
     items: Sequence[VkMessagesConversation]
     unread_count: int
+
+
+class VkMessagesConversationsById(BaseModel):
+    count: int
+    items: Sequence[VkConversationById]
+
+
+class VkMessagesByConversationMessageId(BaseModel):
+    count: int
+    items: Sequence[VkMessagesConversationById]
 
 
 @unique
@@ -326,6 +368,30 @@ async def parse_conversations(data: dict[str, Any]) -> VkMessagesConversations |
 
 
 @parse_vk_response
+async def parse_conversations_by_id(data: dict[str, Any]) -> VkMessagesConversationsById:
+    try:
+        conversation = VkMessagesConversationsById(**data["response"])
+    except ValidationError:
+        return None
+    except KeyError:
+        log.warning("Got key error with data %s", data)
+        return None
+    return conversation
+
+
+@parse_vk_response
+async def parse_by_conversation_message_id(data: dict[str, Any]) -> VkMessagesByConversationMessageId:
+    try:
+        message_by_conversation = VkMessagesByConversationMessageId(**data["response"])
+    except ValidationError:
+        return None
+    except KeyError:
+        log.warning("Got key error with data %s", data)
+        return None
+    return message_by_conversation
+
+
+@parse_vk_response
 async def parse_resolve_screen_name(data: dict[str, Any]) -> VkResolvedObject | None:
     try:
         resolved_object = VkResolvedObject(**data["response"])
@@ -386,6 +452,18 @@ class Vk(BaseHttpClient):
     GET_CONVERSATIONS_HANDLERS: ResponseHandlersType = MappingProxyType(
         {
             HTTPStatus.OK: parse_conversations,
+        }
+    )
+
+    GET_CONVERSATIONS_BY_ID_HANDLERS: ResponseHandlersType = MappingProxyType(
+        {
+            HTTPStatus.OK: parse_conversations_by_id,
+        }
+    )
+
+    GET_BY_CONVERSATION_MESSAGE_ID_HANDLERS: ResponseHandlersType = MappingProxyType(
+        {
+            HTTPStatus.OK: parse_by_conversation_message_id,
         }
     )
 
@@ -594,3 +672,57 @@ class Vk(BaseHttpClient):
             proxy=proxy,
         )
         return None
+
+    @asyncretry(max_tries=2, pause=1)
+    async def get_conversations_by_id(
+        self,
+        access_token: str,
+        proxy: str,
+        peer_ids: str,
+        fields: str = "",
+        group_id: str = "",
+        timeout: TimeoutType = DEFAULT_TIMEOUT,
+    ) -> VkMessagesConversationsById | None:
+        log.info("Request VK API method: messages.getConversationsById")
+        return await self._make_req(
+            method=hdrs.METH_GET,
+            url=self._url / "method/messages.getConversationsById",
+            handlers=self.GET_CONVERSATIONS_BY_ID_HANDLERS,
+            timeout=timeout,
+            params={
+                **self._default_kwargs,
+                "access_token": access_token,
+                "peer_ids": peer_ids,
+                "fields": ",".join(fields),
+                "group_id": group_id,
+            },
+            proxy=proxy,
+        )
+
+    @asyncretry(max_tries=2, pause=1)
+    async def get_by_conversation_message_id(
+        self,
+        access_token: str,
+        proxy: str,
+        peer_id: int,
+        conversation_message_ids: str,
+        fields: str = "",
+        group_id: str = "",
+        timeout: TimeoutType = DEFAULT_TIMEOUT,
+    ) -> VkMessagesByConversationMessageId | None:
+        log.info("Request VK API method: messages.getByConversationMessageId")
+        return await self._make_req(
+            method=hdrs.METH_GET,
+            url=self._url / "method/messages.getByConversationMessageId",
+            handlers=self.GET_BY_CONVERSATION_MESSAGE_ID_HANDLERS,
+            timeout=timeout,
+            params={
+                **self._default_kwargs,
+                "access_token": access_token,
+                "peer_id": peer_id,
+                "conversation_message_ids": conversation_message_ids,
+                "fields": ",".join(fields),
+                "group_id": group_id,
+            },
+            proxy=proxy,
+        )
