@@ -1,9 +1,7 @@
 import asyncio
-import uuid
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import date
-from random import choice
 from typing import Any
 
 import aiohttp_jinja2
@@ -12,9 +10,8 @@ from aiohttp import web
 from aiohttp.web_exceptions import HTTPBadRequest, HTTPNotFound
 
 from vk_parser.admin.handlers.base import CreateMixin, DependenciesMixin, ListMixin
+from vk_parser.admin.message_sender import MessageSender
 from vk_parser.generals.enums import ParserTypes
-from vk_parser.generals.exceptions import VkParserTooManyRequestsException
-from vk_parser.generals.models.vk_group_user import VkGroupUser
 
 
 @dataclass
@@ -162,8 +159,6 @@ class ParserRequestDetailTemplateHandler(
             user = await self.auth_storage.get_user_by_login(decoded_jwt["login"])
             user_id = user.id
 
-        task_name = str(uuid.uuid4())
-
         users = await self.vk_storage.get_users_by_parser_request_id_advanced_filter(
             parser_request_id,
             city=response_data["city"],
@@ -172,87 +167,17 @@ class ParserRequestDetailTemplateHandler(
             sex=response_data["sex"],
         )
 
-        send_message = await self.parser_request_storage.create_send_message(
-            user_id=user_id,
-            parser_request_id=parser_request_id,
-            task_name=task_name,
-            necessary_messages=len(users),
-        )
-
         redirector_task = asyncio.create_task(
             self.parser_request_storage.redirector(url="/admin/send_messages/")
         )
 
-        send_messages_task = asyncio.create_task(
-            self.send_messages(
-                user_id,
-                task_name=task_name,
-                users=users,
-                send_message_id=send_message.id,
-            ),
-            name=task_name,
+        message_sender = MessageSender()
+        send_messages_task = message_sender.start_send_messages_task(
+            user_id=user_id,
+            parser_request_id=parser_request_id,
+            users=users,
         )
 
         await asyncio.gather(redirector_task, send_messages_task)
-
-        return None
-
-    async def send_messages(
-        self,
-        user_id: int,
-        task_name: str,
-        users: Sequence[VkGroupUser],
-        send_message_id: int,
-    ) -> None:
-        try:
-            for user in users:
-                try:
-                    await self.send_message_to_user(
-                        user=user,
-                        user_id=user_id,
-                        task_name=task_name,
-                    )
-                except ConnectionError:
-                    pass
-
-                await asyncio.sleep(10)
-            await self.parser_request_storage.save_send_message_successful_result(
-                id_=send_message_id,
-            )
-        except Exception as e:
-            await self.parser_request_storage.save_send_message_error_result(
-                id_=send_message_id,
-                error_message=str(e),
-            )
-        return None
-
-    async def send_message_to_user(
-        self,
-        user: str,
-        user_id: int,
-        task_name: str,
-    ) -> None:
-        random_account = choice(
-            await self.parser_request_storage.get_random_account(user_id)
-        )
-
-        try:
-            await self.vk_client.post_messages_send(
-                user_id=user.vk_user_id,
-                message=choice(
-                    await self.parser_request_storage.get_random_message(user_id),
-                ).message,
-                access_token=random_account.secret_token,
-                proxy=f"http://{random_account.proxy}",
-            )
-            await self.vk_storage.update_successful_messages_by_id(
-                account_id=random_account.id,
-            )
-            await self.parser_request_storage.update_send_successful_messages(
-                user_id=user_id,
-                task_name=task_name,
-            )
-        except VkParserTooManyRequestsException:
-            pass
 
         return None
