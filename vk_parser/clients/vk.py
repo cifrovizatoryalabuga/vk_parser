@@ -368,7 +368,9 @@ async def parse_conversations(data: dict[str, Any]) -> VkMessagesConversations |
 
 
 @parse_vk_response
-async def parse_conversations_by_id(data: dict[str, Any]) -> VkMessagesConversationsById:
+async def parse_conversations_by_id(
+    data: dict[str, Any],
+) -> VkMessagesConversationsById | None:
     try:
         conversation = VkMessagesConversationsById(**data["response"])
     except ValidationError:
@@ -380,7 +382,9 @@ async def parse_conversations_by_id(data: dict[str, Any]) -> VkMessagesConversat
 
 
 @parse_vk_response
-async def parse_by_conversation_message_id(data: dict[str, Any]) -> VkMessagesByConversationMessageId:
+async def parse_by_conversation_message_id(
+    data: dict[str, Any],
+) -> VkMessagesByConversationMessageId | None:
     try:
         message_by_conversation = VkMessagesByConversationMessageId(**data["response"])
     except ValidationError:
@@ -468,7 +472,15 @@ class Vk(BaseHttpClient):
     )
 
     DEFAULT_FIELDS_GROUPS_GET_BY_ID: ClassVar[Sequence[str]] = ("members_count", "wall")
-    DEFAULT_FIELDS_GROUPS_GET_MEMBERS: ClassVar[Sequence[str]] = ("bdate", "last_seen", "sex", "city", "photo_100", "education", "contacts")
+    DEFAULT_FIELDS_GROUPS_GET_MEMBERS: ClassVar[Sequence[str]] = (
+        "bdate",
+        "last_seen",
+        "sex",
+        "city",
+        "photo_100",
+        "education",
+        "contacts",
+    )
 
     def __init__(
         self,
@@ -557,7 +569,7 @@ class Vk(BaseHttpClient):
 
     @timeout(value=2)
     @asyncretry(max_tries=12, pause=1)
-    async def ping(self, timeout: TimeoutType = DEFAULT_TIMEOUT) -> bool:
+    async def ping(self, timeout: TimeoutType = DEFAULT_TIMEOUT) -> bool | None:
         log.info("Request VK API method: users.get")
         return await self._make_req(
             method=hdrs.METH_POST,
@@ -620,7 +632,7 @@ class Vk(BaseHttpClient):
     async def get_conversations(
         self,
         fields: str = "",
-        messages_filter: str = None,
+        messages_filter: str = "",
         extended: int = 0,
         offset: int = 0,
         count: int = 200,
@@ -639,7 +651,7 @@ class Vk(BaseHttpClient):
                 "offset": offset,
                 "count": count,
                 **self._default_kwargs,
-            }
+            },
         )
 
     @asyncretry(max_tries=2, pause=1)

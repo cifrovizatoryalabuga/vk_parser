@@ -34,16 +34,12 @@ class IndexTemplateHandler(web.View, DependenciesMixin, ListMixin):
             response_data = {"parser": self.request.query.get("parser")}
 
             if response_data["parser"] and response_data["parser"] != "all_parsers":
-                user = await self.auth_storage.get_user_by_login(
-                    response_data["parser"]
-                )
+                user = await self.auth_storage.get_user_by_login(response_data["parser"])
                 user_id = user.id
-                pagination = (
-                    await self.parser_request_storage.admin_pagination_filtered(
-                        page=params.page,
-                        page_size=params.page_size,
-                        user_id=user_id,
-                    )
+                pagination = await self.parser_request_storage.admin_pagination_filtered(
+                    page=params.page,
+                    page_size=params.page_size,
+                    user_id=user_id,
                 )
             else:
                 pagination = await self.parser_request_storage.admin_pagination(

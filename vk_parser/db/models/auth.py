@@ -1,6 +1,4 @@
-from datetime import datetime
-
-from sqlalchemy import BigInteger, Boolean, DateTime, String
+from sqlalchemy import BigInteger, Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from vk_parser.db.models.base import Base, TimestampMixin
@@ -14,7 +12,3 @@ class AuthUser(TimestampMixin, Base):
     password: Mapped[str] = mapped_column(String(1024), nullable=False)
     allowed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     role: Mapped[str] = mapped_column(String(1024), nullable=False, default="user")
-    created_at: Mapped[datetime | None] = mapped_column(
-        DateTime(),
-        nullable=False,
-    )

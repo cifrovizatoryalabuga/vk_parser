@@ -41,15 +41,9 @@ class PaginationMixin:
         )
 
     @inject_session
-    async def _paginate_items(
-        self, session: AsyncSession, query: Select, page: int, page_size: int
-    ) -> Sequence:
-        return (
-            await session.scalars(query.limit(page_size).offset((page - 1) * page_size))
-        ).all()
+    async def _paginate_items(self, session: AsyncSession, query: Select, page: int, page_size: int) -> Sequence:
+        return (await session.scalars(query.limit(page_size).offset((page - 1) * page_size))).all()
 
     @inject_session
     async def _paginate_count(self, session: AsyncSession, query: Select) -> int:
-        return (
-            await session.execute(select(func.count()).select_from(query.subquery()))
-        ).scalar_one()
+        return (await session.execute(select(func.count()).select_from(query.subquery()))).scalar_one()

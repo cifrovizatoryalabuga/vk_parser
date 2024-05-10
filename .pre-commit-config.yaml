@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -22,30 +22,30 @@ repos:
         types: [python]
       - id: trailing-whitespace
 
-#  - repo: https://github.com/astral-sh/ruff-pre-commit
-#    rev: v0.1.7
-#    hooks:
-#      - id: ruff
-#        args: [--fix]
-#      - id: ruff-format
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.5
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
 
-#  - repo: local
-#    hooks:
-#      - id: mypy
-#        name: mypy
-#        entry: mypy ./vk_parser --config-file ./pyproject.toml
-#        language: python
-#        language_version: python3.11
-#        require_serial: true
-#        pass_filenames: false
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: mypy . --config-file ./pyproject.toml
+        language: python
+        language_version: python3.11
+        require_serial: true
+        pass_filenames: false
 
 
-#  - repo: https://github.com/IamTheFij/docker-pre-commit
-#    rev: v3.0.1
-#    hooks:
-##      - id: docker-compose-check#
-#
-##  - repo: meta
-#    hooks:
-#      - id: check-hooks-apply
-#      - id: check-useless-excludes
+  - repo: https://github.com/IamTheFij/docker-pre-commit
+    rev: v3.0.1
+    hooks:
+      - id: docker-compose-check
+
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes

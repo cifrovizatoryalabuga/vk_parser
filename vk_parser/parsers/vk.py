@@ -31,9 +31,7 @@ class PostVkParser(BaseParser):
     vk_storage: VkStorage
     parser_request_storage: ParserRequestStorage
 
-    async def _process(
-        self, parser_request_id: int, input_data: dict[str, Any]
-    ) -> None:
+    async def _process(self, parser_request_id: int, input_data: dict[str, Any]) -> None:
         data = ParsePostsVkForm(**input_data)
         vk_group_id = await self._get_group_id(url=data.group_url)
         vk_group = await self.vk_storage.create_group(
@@ -57,9 +55,7 @@ class PostVkParser(BaseParser):
         if not posts or not users:
             await self._save_empty_result(
                 parser_request_id=parser_request_id,
-                message=RequestMessage.EMPTY_USERS
-                if not users
-                else RequestMessage.EMPTY_POSTS,
+                message=RequestMessage.EMPTY_USERS if not users else RequestMessage.EMPTY_POSTS,
             )
             return
         log.info(
@@ -103,9 +99,7 @@ class PostVkParser(BaseParser):
 
         return resolved_object.object_id
 
-    async def _download_posts(
-        self, vk_group: VkGroup, posted_up_to: datetime
-    ) -> Sequence[VkWallPost]:
+    async def _download_posts(self, vk_group: VkGroup, posted_up_to: datetime) -> Sequence[VkWallPost]:
         posted_up_to_without_tz = posted_up_to.replace(tzinfo=None)
         posts: list[VkWallPost] = []
         offset = 0
@@ -131,7 +125,7 @@ class PostVkParser(BaseParser):
             await asyncio.sleep(0.2)
 
         if posts:
-            await self.vk_storage.create_posts(posts, vk_group.id)
+            await self.vk_storage.create_posts(posts=posts, group_id=vk_group.id)
         return posts
 
     async def _download_users(
@@ -139,6 +133,7 @@ class PostVkParser(BaseParser):
         vk_group: VkGroup,
         min_age: int,
         max_age: int,
+        parser_request_id: int,
     ) -> Sequence[VkGroupMember]:
         users: list[VkGroupMember] = []
         offset = 0
@@ -159,12 +154,10 @@ class PostVkParser(BaseParser):
                 break
             await asyncio.sleep(0.3)
         if users:
-            await self.vk_storage.create_users(users, vk_group.id)
+            await self.vk_storage.create_users(users=users, group_id=vk_group.id, parser_request_id=parser_request_id)
         return users
 
-    async def _calculate_result(
-        self, user_ids: Sequence[int], users_in_posts: Mapping[int, int]
-    ) -> Result:
+    async def _calculate_result(self, user_ids: Sequence[int], users_in_posts: Mapping[int, int]) -> Result:
         user_ids_set = set(user_ids)
         user_stat = []
         for id_ in users_in_posts:
@@ -179,9 +172,7 @@ class SimpleVkParser(BaseParser):
     vk_storage: VkStorage
     parser_request_storage: ParserRequestStorage
 
-    async def _process(
-        self, parser_request_id: int, input_data: dict[str, Any]
-    ) -> None:
+    async def _process(self, parser_request_id: int, input_data: dict[str, Any]) -> None:
         data = SimpleVkForm(**input_data)
         vk_group_id = await self._get_group_id(url=data.group_url)
         vk_group = await self.vk_storage.create_group(
@@ -200,9 +191,7 @@ class SimpleVkParser(BaseParser):
             await self.parser_request_storage.save_empty_result(
                 id_=parser_request_id,
                 finished_at=datetime.now(),
-                message="Empty group users"
-                if not users
-                else "Posts with users not found",
+                message="Empty group users" if not users else "Posts with users not found",
             )
             return
         log.info(
@@ -249,7 +238,6 @@ class SimpleVkParser(BaseParser):
                 do_next = False
                 break
             for user in chunk_users.items:
-                print(user.university_name)
                 if user.in_age_range(min_age=min_age, max_age=max_age):
                     users.append(user)
             offset += len(chunk_users.items)
@@ -257,7 +245,7 @@ class SimpleVkParser(BaseParser):
                 break
             await asyncio.sleep(0.3)
         if users:
-            await self.vk_storage.create_users(users, vk_group.id, parser_request_id)
+            await self.vk_storage.create_users(users=users, group_id=vk_group.id, parser_request_id=parser_request_id)
         return users
 
 
@@ -267,7 +255,5 @@ class SendMessages(BaseSender):
     vk_storage: VkStorage
     parser_request_storage: ParserRequestStorage
 
-    async def _process(
-        self, parser_request_id: int, input_data: dict[str, Any]
-    ) -> None:
+    async def _process(self, parser_request_id: int, input_data: dict[str, Any]) -> None:
         pass

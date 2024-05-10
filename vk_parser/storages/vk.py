@@ -123,9 +123,7 @@ class VkStorage:
         await session.commit()
 
     @inject_session
-    async def remove_users_by_id(
-        self, session: AsyncSession, id: int, parser_request_id: int
-    ) -> None:
+    async def remove_users_by_id(self, session: AsyncSession, id: int, parser_request_id: int) -> None:
         try:
             query = delete(VkGroupUserDb).where(
                 and_(
@@ -201,9 +199,7 @@ class VkStorage:
         session: AsyncSession,
         group_id: int,
     ) -> Sequence[int]:
-        query = select(VkGroupUserDb.vk_user_id).where(
-            VkGroupUserDb.vk_group_id == group_id
-        )
+        query = select(VkGroupUserDb.vk_user_id).where(VkGroupUserDb.vk_group_id == group_id)
         result = await session.execute(query)
         return tuple(r[0] for r in result)
 
@@ -257,10 +253,10 @@ class VkStorage:
         self,
         session: AsyncSession,
         parser_request_id: int,
-        city: str = None,
-        from_user_year: int = None,
-        to_user_year: int = None,
-        sex: str = None,
+        city: str | None = None,
+        from_user_year: int | None = None,
+        to_user_year: int | None = None,
+        sex: str | None = None,
     ) -> Sequence[VkGroupUser]:
         query = (
             select(VkGroupUserDb)
@@ -270,7 +266,7 @@ class VkStorage:
 
         if city is not None:
             if city == "None":
-                query = query.filter(VkGroupUserDb.city == None)
+                query = query.filter(VkGroupUserDb.city.is_(None))
             elif city != "all_cities":
                 query = query.filter(VkGroupUserDb.city == city)
         if from_user_year is not None:
@@ -290,7 +286,7 @@ class VkStorage:
         self,
         session: AsyncSession,
         parser_request_id: int,
-        filtered_city: str,
+        filtered_city: str | None,
         filtered_year_from: str,
         filtered_year_to: str,
     ) -> Sequence[VkGroupUser]:
@@ -303,16 +299,8 @@ class VkStorage:
                 .where(
                     and_(VkGroupDb.parser_request_id == parser_request_id),
                     (VkGroupUserDb.city == filtered_city),
-                    (
-                        VkGroupUserDb.birth_date
-                        >= dt.datetime.strptime(
-                            f"01.01.{filtered_year_from}", "%d.%m.%Y"
-                        )
-                    ),
-                    (
-                        VkGroupUserDb.birth_date
-                        <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
-                    ),
+                    (VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", "%d.%m.%Y")),
+                    (VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")),
                 )
             )
             res = await session.scalars(query)
@@ -324,14 +312,8 @@ class VkStorage:
                 .where(
                     and_(
                         VkGroupDb.parser_request_id == parser_request_id,
-                        VkGroupUserDb.birth_date
-                        >= dt.datetime.strptime(
-                            f"01.01.{filtered_year_from}", "%d.%m.%Y"
-                        ),
-                        VkGroupUserDb.birth_date
-                        <= dt.datetime.strptime(
-                            f"01.01.{filtered_year_to}", "%d.%m.%Y"
-                        ),
+                        VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", "%d.%m.%Y"),
+                        VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y"),
                     )
                 )
             )
@@ -374,10 +356,10 @@ class VkStorage:
 
         except DBAPIError:
             log.warning(
-                    "Error in creating account! Incorrect form account: %s",
-                    insert_data,
-                    exc_info=True,
-                )
+                "Error in creating account! Incorrect form account: %s",
+                insert_data,
+                exc_info=True,
+            )
             return None
         return None
 
@@ -430,22 +412,20 @@ def not_none(value: NType | None) -> NType:
     return value
 
 
-def sex_convert_vk(sex) -> str:
-    try:
-        if sex == 1:
-            return "Ж"
-        elif sex == 2:
-            return "М"
-    except Exception as e:
-        print("SEX EXCEPTION :", e)
-        pass
+def sex_convert_vk(sex: int) -> str | None:
+    if sex == 1:
+        return "Ж"
+    elif sex == 2:
+        return "М"
+    else:
+        raise ValueError("Invalid VK sex code: {}".format(sex))
 
 
-def city_convert_vk(city) -> str:
+def city_convert_vk(city: dict[str, Any]) -> str | None:
     try:
         return city["title"]
-    except Exception:
-        pass
+    except KeyError:
+        return None
 
 
 def show_item(item):

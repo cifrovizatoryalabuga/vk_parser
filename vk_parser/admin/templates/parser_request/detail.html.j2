@@ -177,7 +177,7 @@
                 </li>
                 <li class="inactive"><span>...</span></li>
               {% endif %}
-        
+
               <!-- Middle pages -->
               {% if pages > 2 %}
                 {% if page == 1 %}
@@ -198,14 +198,14 @@
                   {% endif %}
                 {% endif %}
               {% endif %}
-        
+
               {% if page + 1 < pages %}
                 <!-- Last page -->
                 <li class="{% if page == pages %} active {% else %} inactive {% endif %}">
                   <a href="/admin/parsers/{{ parser_request.id }}/?city={{ response_data['city'] }}&from_user_year={{ response_data['from_user_year'] }}&to_user_year={{ response_data['to_user_year'] }}&sex={{ response_data['sex'] }}&page_size={{ page_size }}&page={{ pages }}">{{ pages }}</a>
                 </li>
               {% endif %}
-        
+
               <!-- Next page -->
               {% if page != pages %}
                 <li class="waves-effect">

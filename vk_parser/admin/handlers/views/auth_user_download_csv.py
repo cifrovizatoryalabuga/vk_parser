@@ -55,10 +55,7 @@ class AuthUserDownloadCsvHandler(web.View, DependenciesMixin):
                     parser_count_by_date[finished_date] += 1
                     if parser.status == RequestStatus.SUCCESSFUL:
                         success_parser_count_by_date[finished_date] += 1
-            for finished_date in sorted(
-                set(parser_count_by_date.keys()) |
-                set(success_parser_count_by_date.keys())
-            ):
+            for finished_date in sorted(set(parser_count_by_date.keys()) | set(success_parser_count_by_date.keys())):
                 parser_count = parser_count_by_date[finished_date]
                 success_parser_count = success_parser_count_by_date[finished_date]
                 writer.writerow(

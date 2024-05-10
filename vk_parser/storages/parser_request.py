@@ -127,9 +127,7 @@ class ParserRequestStorage(PaginationMixin):
         user_id: int,
     ) -> PaginationResponse[SendMessages]:
         query = (
-            select(SendMessagesDb)
-            .where(SendMessagesDb.user_id == user_id)
-            .order_by(SendMessagesDb.created_at.desc())
+            select(SendMessagesDb).where(SendMessagesDb.user_id == user_id).order_by(SendMessagesDb.created_at.desc())
         )
         return await self._paginate(
             query=query,
@@ -178,10 +176,7 @@ class ParserRequestStorage(PaginationMixin):
         page_size: int,
         user_id: int,
     ) -> PaginationResponse[SendAccounts]:
-        query = (
-            select(SendAccountsDb)
-            .where(SendAccountsDb.user_id == user_id)
-        )
+        query = select(SendAccountsDb).where(SendAccountsDb.user_id == user_id)
         return await self._paginate(
             query=query,
             page=page,
@@ -225,7 +220,7 @@ class ParserRequestStorage(PaginationMixin):
 
         if filtered_city is not None:
             if filtered_city == "None":
-                query = query.filter(VkGroupUserDb.city == None)
+                query = query.filter(VkGroupUserDb.city.is_(None))
             elif filtered_city != "all_cities":
                 query = query.filter(VkGroupUserDb.city == filtered_city)
         if filtered_year_from is not None:
@@ -247,7 +242,7 @@ class ParserRequestStorage(PaginationMixin):
     async def admin_pagination_users_filtered(
         self,
         parser_request_id: int,
-        filtered_city: str,
+        filtered_city: str | None,
         filtered_year_from: str,
         filtered_year_to: str,
         page: int,
@@ -263,16 +258,8 @@ class ParserRequestStorage(PaginationMixin):
                     .filter(
                         (VkGroupDb.parser_request_id == parser_request_id)
                         & (VkGroupUserDb.city == filtered_city)
-                        & (
-                            VkGroupUserDb.birth_date
-                            >= dt.datetime.strptime(
-                                f"01.01.{filtered_year_from}", "%d.%m.%Y"
-                            )
-                        )
-                        & (
-                            VkGroupUserDb.birth_date
-                            <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
-                        )
+                        & (VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", "%d.%m.%Y"))
+                        & (VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y"))
                     )
                 )
             else:
@@ -281,16 +268,8 @@ class ParserRequestStorage(PaginationMixin):
                     .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
                     .filter(
                         (VkGroupDb.parser_request_id == parser_request_id)
-                        & (
-                            VkGroupUserDb.birth_date
-                            >= dt.datetime.strptime(
-                                f"01.01.{filtered_year_from}", "%d.%m.%Y"
-                            )
-                        )
-                        & (
-                            VkGroupUserDb.birth_date
-                            <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
-                        )
+                        & (VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", "%d.%m.%Y"))
+                        & (VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y"))
                     )
                 )
         else:
@@ -299,16 +278,8 @@ class ParserRequestStorage(PaginationMixin):
                 .join(VkGroupDb, VkGroupUserDb.vk_group_id == VkGroupDb.id)
                 .filter(
                     (VkGroupDb.parser_request_id == parser_request_id)
-                    & (
-                        VkGroupUserDb.birth_date
-                        >= dt.datetime.strptime(
-                            f"01.01.{filtered_year_from}", "%d.%m.%Y"
-                        )
-                    )
-                    & (
-                        VkGroupUserDb.birth_date
-                        <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y")
-                    )
+                    & (VkGroupUserDb.birth_date >= dt.datetime.strptime(f"01.01.{filtered_year_from}", "%d.%m.%Y"))
+                    & (VkGroupUserDb.birth_date <= dt.datetime.strptime(f"01.01.{filtered_year_to}", "%d.%m.%Y"))
                 )
             )
         return await self._paginate(
@@ -324,11 +295,7 @@ class ParserRequestStorage(PaginationMixin):
         page_size: int,
         user_id: int,
     ) -> PaginationResponse[Messages]:
-        query = (
-            select(MessagesDb)
-            .where(MessagesDb.user_id == user_id)
-            .order_by(MessagesDb.created_at.desc())
-        )
+        query = select(MessagesDb).where(MessagesDb.user_id == user_id).order_by(MessagesDb.created_at.desc())
         return await self._paginate(
             query=query,
             page=page,
@@ -365,9 +332,7 @@ class ParserRequestStorage(PaginationMixin):
             result: ScalarResult[ParserRequestDb] = await session.scalars(query)
             await session.commit()
         except DBAPIError:
-            log.warning(
-                "Error in creating parser request: %s", input_data, exc_info=True
-            )
+            log.warning("Error in creating parser request: %s", input_data, exc_info=True)
             return None
         return DetailParserRequest.model_validate(result.one())
 
@@ -379,10 +344,7 @@ class ParserRequestStorage(PaginationMixin):
         status: RequestStatus,
     ) -> DetailParserRequest | None:
         query = (
-            update(ParserRequestDb)
-            .where(ParserRequestDb.id == id_)
-            .values(status=status)
-            .returning(ParserRequestDb)
+            update(ParserRequestDb).where(ParserRequestDb.id == id_).values(status=status).returning(ParserRequestDb)
         )
         try:
             result = await session.scalars(query)
@@ -528,7 +490,7 @@ class ParserRequestStorage(PaginationMixin):
 
     async def redirector(
         self,
-        url,
+        url: str,
     ) -> Exception:
         raise web.HTTPFound(url)
 
@@ -557,7 +519,9 @@ class ParserRequestStorage(PaginationMixin):
             await session.commit()
         except DBAPIError:
             log.warning(
-                "Error in creating send message: %s", task_name, exc_info=True,
+                "Error in creating send message: %s",
+                task_name,
+                exc_info=True,
             )
             return None
         return SendMessages.model_validate(result.one())
@@ -679,7 +643,9 @@ class ParserRequestStorage(PaginationMixin):
             await session.commit()
         except DBAPIError:
             log.warning(
-                "Error in creating vk messages: %s", dialog_id, exc_info=True,
+                "Error in creating vk messages: %s",
+                dialog_id,
+                exc_info=True,
             )
             return None
         return VkMessages.model_validate(result.one())

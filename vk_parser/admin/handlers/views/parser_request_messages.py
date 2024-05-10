@@ -8,9 +8,7 @@ from aiohttp import web
 from vk_parser.admin.handlers.base import CreateMixin, DependenciesMixin, ListMixin
 
 
-class ParserRequestListMessagesTemplateHandler(
-    web.View, DependenciesMixin, CreateMixin, ListMixin
-):
+class ParserRequestListMessagesTemplateHandler(web.View, DependenciesMixin, CreateMixin, ListMixin):
     @aiohttp_jinja2.template("./parser_request/messages.html.j2")
     async def get(self) -> Mapping[str, Any]:
         jwt_token = self.request.cookies.get("jwt_token")

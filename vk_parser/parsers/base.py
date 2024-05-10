@@ -20,9 +20,7 @@ class BaseParser(ABC):
         )
         try:
             log.info("Start process request: %d", parser_request_id)
-            await self._process(
-                parser_request_id=parser_request_id, input_data=input_data
-            )
+            await self._process(parser_request_id=parser_request_id, input_data=input_data)
             log.info("Finished process request: %d", parser_request_id)
         except Exception as e:  # noqa: BLE001
             log.warning("Error processing with data: %s", input_data, exc_info=True)
@@ -32,9 +30,7 @@ class BaseParser(ABC):
                 error_message=str(e),
             )
 
-    async def _process(
-        self, parser_request_id: int, input_data: dict[str, Any]
-    ) -> None:
+    async def _process(self, parser_request_id: int, input_data: dict[str, Any]) -> None:
         raise NotImplementedError
 
     async def _save_empty_result(self, parser_request_id: int, message: str) -> None:
@@ -44,9 +40,7 @@ class BaseParser(ABC):
             message=message,
         )
 
-    async def _save_successful_result(
-        self, parser_request_id: int, result: Result
-    ) -> None:
+    async def _save_successful_result(self, parser_request_id: int, result: Result) -> None:
         await self.parser_request_storage.save_successful_result(
             id_=parser_request_id, result=result, finished_at=datetime.now()
         )
@@ -62,9 +56,7 @@ class BaseSender(ABC):
         )
         try:
             log.info("Start process request: %d", parser_request_id)
-            await self._process(
-                parser_request_id=parser_request_id, input_data=input_data
-            )
+            await self._process(parser_request_id=parser_request_id, input_data=input_data)
             log.info("Finished process request: %d", parser_request_id)
         except Exception as e:  # noqa: BLE001
             log.warning("Error processing with data: %s", input_data, exc_info=True)
@@ -74,9 +66,7 @@ class BaseSender(ABC):
                 error_message=str(e),
             )
 
-    async def _process(
-        self, parser_request_id: int, input_data: dict[str, Any]
-    ) -> None:
+    async def _process(self, parser_request_id: int, input_data: dict[str, Any]) -> None:
         raise NotImplementedError
 
     async def _save_empty_result(self, parser_request_id: int, message: str) -> None:
@@ -86,9 +76,7 @@ class BaseSender(ABC):
             message=message,
         )
 
-    async def _save_successful_result(
-        self, parser_request_id: int, result: Result
-    ) -> None:
+    async def _save_successful_result(self, parser_request_id: int, result: Result) -> None:
         await self.parser_request_storage.save_successful_result(
             id_=parser_request_id, result=result, finished_at=datetime.now()
         )

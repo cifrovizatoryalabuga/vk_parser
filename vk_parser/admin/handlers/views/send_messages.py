@@ -19,7 +19,7 @@ class SendMessageTemplateHandler(
 ):
     @aiohttp_jinja2.template("./parser_request/send_messages.html.j2")
     async def get(self) -> Mapping[str, Any]:
-        jwt_token = self.request.cookies.get('jwt_token')
+        jwt_token = self.request.cookies.get("jwt_token")
         if jwt_token:
             try:
                 decoded_jwt = jwt.decode(jwt_token, "secret", algorithms=["HS256"])
@@ -27,7 +27,7 @@ class SendMessageTemplateHandler(
                 location = self.request.app.router["logout_user"].url_for()
                 raise web.HTTPFound(location=location)
             try:
-                user = await self.auth_storage.get_user_by_login(decoded_jwt['login'])
+                user = await self.auth_storage.get_user_by_login(decoded_jwt["login"])
                 user_id = user.id
             except AttributeError:
                 location = self.request.app.router["logout_user"].url_for()
@@ -60,14 +60,14 @@ class SendMessageTemplateHandler(
                 location = self.request.app.router["logout_user"].url_for()
                 raise web.HTTPFound(location=location)
 
-        send_message_id = input_data["sendMessageId"]
-        task_name = input_data["taskName"]
+        send_message_id = int(input_data["sendMessageId"])
+        task_name = str(input_data["taskName"])
         for task in asyncio.all_tasks():
             if task.get_name() == task_name:
                 task.cancel()
                 await task
                 await self.parser_request_storage.save_send_message_successful_result(
-                    id_=int(send_message_id),
+                    id_=send_message_id,
                 )
                 return web.Response(
                     text="<script>window.location.replace('/admin/all_users/');</script>",

@@ -1,7 +1,6 @@
 from aiohttp.web import Response, View
 from aiohttp.web_exceptions import HTTPBadRequest, HTTPNotFound
 from aiomisc import timeout
-from aiohttp import web
 
 from vk_parser.admin.handlers.base import DependenciesMixin
 from vk_parser.utils.http import fast_json_response
@@ -23,4 +22,3 @@ class ParserRequestDetailHandler(View, DependenciesMixin):
             return int(self.request.match_info["id"])
         except ValueError:
             raise HTTPBadRequest(reason="Invalid ID value")
-        

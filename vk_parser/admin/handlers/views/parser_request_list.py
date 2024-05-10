@@ -2,8 +2,8 @@ from collections.abc import Mapping
 from typing import Any
 
 import aiohttp_jinja2
-from aiohttp import web
 import jwt
+from aiohttp import web
 
 from vk_parser.admin.handlers.base import DependenciesMixin, ListMixin
 
@@ -11,16 +11,15 @@ from vk_parser.admin.handlers.base import DependenciesMixin, ListMixin
 class ParserRequestListTemplateHandler(web.View, DependenciesMixin, ListMixin):
     @aiohttp_jinja2.template("./parser_request/list.html.j2")
     async def get(self) -> Mapping[str, Any]:
-        jwt_token = self.request.cookies.get('jwt_token')
+        jwt_token = self.request.cookies.get("jwt_token")
         if jwt_token:
-
             try:
                 decoded_jwt = jwt.decode(jwt_token, "secret", algorithms=["HS256"])
             except jwt.ExpiredSignatureError:
                 location = self.request.app.router["logout_user"].url_for()
                 raise web.HTTPFound(location=location)
             try:
-                user = await self.auth_storage.get_user_by_login(decoded_jwt['login'])
+                user = await self.auth_storage.get_user_by_login(decoded_jwt["login"])
                 user_id = user.id
             except AttributeError:
                 location = self.request.app.router["logout_user"].url_for()
@@ -38,5 +37,5 @@ class ParserRequestListTemplateHandler(web.View, DependenciesMixin, ListMixin):
                 "pagination": pagination,
             }
         else:
-            response = web.HTTPFound('/admin/login/')
+            response = web.HTTPFound("/admin/login/")
             raise response

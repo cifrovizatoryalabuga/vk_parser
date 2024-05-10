@@ -24,9 +24,7 @@ class LoginUserTemplateHandler(web.View, DependenciesMixin, ListMixin):
         login = input_data["login"]
         password = input_data["password"]
 
-        authorization = await self.auth_storage.authorization_user(
-            login=login, password=password
-        )
+        authorization = await self.auth_storage.authorization_user(login=login, password=password)
 
         if authorization:
             user = await self.auth_storage.get_user_by_login(login)

@@ -58,9 +58,7 @@ def users_to_csv(users: Sequence[VkGroupUser]) -> str:
                 user.university_name,
                 user.city,
                 user.birth_date.strftime("%d.%m.%Y") if user.birth_date else "",
-                user.last_visit_vk_date.strftime("%d.%m.%Y")
-                if user.last_visit_vk_date
-                else "",
+                user.last_visit_vk_date.strftime("%d.%m.%Y") if user.last_visit_vk_date else "",
             ]
         )
     return output.getvalue()

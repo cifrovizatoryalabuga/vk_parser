@@ -39,9 +39,7 @@ class UserCities:
     city: str | None
 
 
-class ParserRequestDetailTemplateHandler(
-    web.View, DependenciesMixin, CreateMixin, ListMixin
-):
+class ParserRequestDetailTemplateHandler(web.View, DependenciesMixin, CreateMixin, ListMixin):
     @aiohttp_jinja2.template("./parser_request/detail.html.j2")
     async def get(self) -> Mapping[str, Any]:
         parser_request_id = self._get_id()
@@ -56,9 +54,7 @@ class ParserRequestDetailTemplateHandler(
         )
 
         # Добавляем список городов со всех спаршенных Юзеров
-        all_users = await self.vk_storage.get_users_by_parser_request_id(
-            parser_request_id
-        )
+        all_users = await self.vk_storage.get_users_by_parser_request_id(parser_request_id)
         all_cities = []
         for user in all_users:
             city = (user.city,)
@@ -87,34 +83,30 @@ class ParserRequestDetailTemplateHandler(
                     and response_data["to_user_year"]
                     and response_data["sex"]
                 ):
-                    users = (
-                        await self.vk_storage.get_users_by_parser_request_id_advanced_filter(
-                            parser_request_id,
-                            city=response_data["city"],
-                            from_user_year=response_data["from_user_year"],
-                            to_user_year=response_data["to_user_year"],
-                            sex=response_data["sex"],
-                        )
+                    users = await self.vk_storage.get_users_by_parser_request_id_advanced_filter(
+                        parser_request_id,
+                        city=str(response_data["city"]),
+                        from_user_year=int(response_data["from_user_year"]),
+                        to_user_year=int(response_data["to_user_year"]),
+                        sex=str(response_data["sex"]),
                     )
                     pagination = await self.parser_request_storage.admin_pagination_users_advanced_filter(
                         parser_request_id,
                         page=params.page,
                         page_size=params.page_size,
-                        filtered_city=response_data["city"],
-                        filtered_year_from=response_data["from_user_year"],
-                        filtered_year_to=response_data["to_user_year"],
-                        filtered_sex=response_data["sex"],
+                        filtered_city=str(response_data["city"]),
+                        filtered_year_from=str(response_data["from_user_year"]),
+                        filtered_year_to=str(response_data["to_user_year"]),
+                        filtered_sex=str(response_data["sex"]),
                     )
                 else:
                     users = await self.vk_storage.get_users_by_parser_request_id(
                         parser_request_id,
                     )
-                    pagination = (
-                        await self.parser_request_storage.admin_pagination_parsed_users(
-                            parser_request_id,
-                            page=params.page,
-                            page_size=params.page_size,
-                        )
+                    pagination = await self.parser_request_storage.admin_pagination_parsed_users(
+                        parser_request_id,
+                        page=params.page,
+                        page_size=params.page_size,
                     )
                 user_data = []
                 for user in users:
@@ -161,15 +153,13 @@ class ParserRequestDetailTemplateHandler(
 
         users = await self.vk_storage.get_users_by_parser_request_id_advanced_filter(
             parser_request_id,
-            city=response_data["city"],
-            from_user_year=response_data["from_user_year"],
-            to_user_year=response_data["to_user_year"],
-            sex=response_data["sex"],
+            city=str(response_data["city"]),
+            from_user_year=int(response_data["from_user_year"]),
+            to_user_year=int(response_data["to_user_year"]),
+            sex=str(response_data["sex"]),
         )
 
-        redirector_task = asyncio.create_task(
-            self.parser_request_storage.redirector(url="/admin/send_messages/")
-        )
+        redirector_task = asyncio.create_task(self.parser_request_storage.redirector(url="/admin/send_messages/"))
 
         message_sender = MessageSender()
         send_messages_task = message_sender.start_send_messages_task(

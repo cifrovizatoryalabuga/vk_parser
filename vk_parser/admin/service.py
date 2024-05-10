@@ -163,7 +163,7 @@ class Admin(AIOHTTPService):
             hdrs.METH_GET,
             "/admin/parsers/auth_users/",
             AuthUserDownloadCsvHandler,
-            "parser_request_auth_users_download"
+            "parser_request_auth_users_download",
         ),
         (
             hdrs.METH_GET,
@@ -272,7 +272,7 @@ class Admin(AIOHTTPService):
             "/admin/change_role/",
             ChangeRoleDBHandler,
             "change_role_request",
-        )
+        ),
     )
 
     async def create_application(self) -> Application:
@@ -300,9 +300,7 @@ class Admin(AIOHTTPService):
             filters={"datetime_format": datetime_format},
         )
 
-    def _configure_cors(
-        self, app: Application, routes: Sequence[AbstractRoute]
-    ) -> None:
+    def _configure_cors(self, app: Application, routes: Sequence[AbstractRoute]) -> None:
         resource_options = aiohttp_cors.ResourceOptions(
             allow_headers="*",
             allow_methods=ALLOWED_METHODS,

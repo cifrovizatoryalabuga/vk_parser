@@ -28,36 +28,29 @@ session_factory = create_async_session_factory(
 )
 
 
-class Tasks():
-    async def delete_archive_accounts(self):
+class Tasks:
+    async def delete_archive_accounts(self) -> None:
         async with AsyncSession(engine) as session:
             async with session.begin():
-                await session.execute(
-                    delete(SendAccountsDb)
-                    .where(SendAccountsDb.status == SendAccountStatus.ARCHIVE)
-                )
+                await session.execute(delete(SendAccountsDb).where(SendAccountsDb.status == SendAccountStatus.ARCHIVE))
 
-    async def delete_old_send_messages(self):
+    async def delete_old_send_messages(self) -> None:
         async with AsyncSession(engine) as session:
             async with session.begin():
                 one_week_ago = datetime.now() - timedelta(weeks=1)
-                await session.execute(
-                    delete(SendMessagesDb)
-                    .where(SendMessagesDb.created_at < one_week_ago)
-                )
+                await session.execute(delete(SendMessagesDb).where(SendMessagesDb.created_at < one_week_ago))
 
-    async def reset_send_accounts(self):
+    async def reset_send_accounts(self) -> None:
         async with AsyncSession(engine) as session:
             async with session.begin():
                 await session.execute(
-                    update(SendAccountsDb)
-                    .values(
+                    update(SendAccountsDb).values(
                         status=SendAccountStatus.ACTIVE,
                         successful_messages=0,
                     )
                 )
 
-    async def dialogue(self):
+    async def dialogue(self) -> None:
         async with AsyncSession(engine) as session:
             async with session.begin():
                 vk_dialogs_result = await session.execute(
@@ -93,8 +86,14 @@ class Tasks():
                             for conversation_message in conversation_messages.items:
                                 query = (
                                     select(func.max(MessagesDb.order))
-                                    .join(VkMessagesDb, MessagesDb.id == VkMessagesDb.message_id)
-                                    .join(VkDialogsDb, VkMessagesDb.dialog_id == VkDialogsDb.id)
+                                    .join(
+                                        VkMessagesDb,
+                                        MessagesDb.id == VkMessagesDb.message_id,
+                                    )
+                                    .join(
+                                        VkDialogsDb,
+                                        VkMessagesDb.dialog_id == VkDialogsDb.id,
+                                    )
                                     .where(VkDialogsDb.id == vk_dialog.id)
                                 )
 

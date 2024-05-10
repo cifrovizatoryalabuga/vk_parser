@@ -35,7 +35,7 @@ class BaseHttpClient:
         url: URL,
         handlers: ResponseHandlersType,
         timeout: TimeoutType = DEFAULT_TIMEOUT,
-        proxy: str = None,
+        proxy: str | None = None,
         **kwargs: Any,
     ) -> Any | None:
         proxy_url = f"http://{proxy}" if proxy else None

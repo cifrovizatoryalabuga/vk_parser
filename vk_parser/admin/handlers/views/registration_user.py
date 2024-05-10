@@ -11,9 +11,7 @@ from vk_parser.admin.handlers.base import CreateMixin, DependenciesMixin, ListMi
 from vk_parser.generals.enums import UserRoles
 
 
-class RegistrationUserTemplateHandler(
-    web.View, DependenciesMixin, ListMixin, CreateMixin
-):
+class RegistrationUserTemplateHandler(web.View, DependenciesMixin, ListMixin, CreateMixin):
     @aiohttp_jinja2.template("./authorization/registration.html.j2")
     async def get(self) -> Mapping[str, Any]:
         if self.request.cookies.get("jwt_token"):
@@ -27,9 +25,7 @@ class RegistrationUserTemplateHandler(
         login_pattern = r"^[A-Z][a-z]*_[A-Z][a-z]*$"
         password_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?]{6,}$'
         input_data = await self.request.post()
-        if not re.match(login_pattern, input_data["login"]) or not re.match(
-            password_pattern, input_data["password"]
-        ):
+        if not re.match(login_pattern, input_data["login"]) or not re.match(password_pattern, input_data["password"]):
             return {"error": True}
 
         login = input_data["login"]

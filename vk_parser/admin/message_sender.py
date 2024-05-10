@@ -24,7 +24,7 @@ session_factory = create_async_session_factory(
 )
 
 
-class MessageSender():
+class MessageSender:
     def __init__(
         self,
     ) -> None:
@@ -70,9 +70,7 @@ class MessageSender():
         task_name: str,
     ) -> None:
         for user in users:
-            random_account = choice(
-                await self.parser_request_storage.get_random_account(user_id=user_id)
-            )
+            random_account = choice(await self.parser_request_storage.get_random_account(user_id=user_id))
             random_message = choice(
                 await self.parser_request_storage.get_random_message(
                     user_id=user_id,
