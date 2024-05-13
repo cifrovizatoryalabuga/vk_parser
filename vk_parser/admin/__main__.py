@@ -39,8 +39,8 @@ def main() -> None:
             },
             {
                 "func": tasks.dialogue,
-                "trigger": "interval",
-                "hour": 3,
+                "trigger": "cron",
+                "hour": "*/3",
             },
         ],
     )
