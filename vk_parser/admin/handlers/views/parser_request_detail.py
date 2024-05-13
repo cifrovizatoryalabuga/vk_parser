@@ -36,7 +36,7 @@ class ParserRequestDetailTemplateHandler(web.View, DependenciesMixin, CreateMixi
 
         if jwt_token:
             try:
-                jwt.decode(jwt_token, "secret", algorithms=["HS256"])
+                decoded_jwt = jwt.decode(jwt_token, "secret", algorithms=["HS256"])
             except jwt.ExpiredSignatureError:
                 location = self.request.app.router["logout_user"].url_for()
                 raise web.HTTPFound(location=location)
@@ -65,6 +65,7 @@ class ParserRequestDetailTemplateHandler(web.View, DependenciesMixin, CreateMixi
             pagination.items = list(zip(pagination.items, posts))
 
             return {
+                "user_info": decoded_jwt,
                 "posts": posts,
                 "response_data": response_data,
                 "pagination": pagination,
