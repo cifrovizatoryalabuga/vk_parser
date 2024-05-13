@@ -1,7 +1,5 @@
 import asyncio
 from collections.abc import Mapping
-from dataclasses import dataclass, field
-from datetime import date
 from typing import Any
 
 import aiohttp_jinja2
@@ -11,119 +9,71 @@ from aiohttp.web_exceptions import HTTPBadRequest, HTTPNotFound
 
 from vk_parser.admin.handlers.base import CreateMixin, DependenciesMixin, ListMixin
 from vk_parser.admin.message_sender import MessageSender
-from vk_parser.generals.enums import ParserTypes
-
-
-@dataclass
-class PostData:
-    url: str
-    text: str
-
-
-@dataclass
-class UserRow:
-    vk_user_id: int
-    first_name: str | None
-    last_name: str | None
-    birth_date: date | None
-    sex: int | None
-    university_name: str | None
-    photo_100: str | None
-    city: dict | None
-    last_visit_vk_date: date | None
-    posts: list[PostData] = field(default_factory=list)
-
-
-@dataclass
-class UserCities:
-    city: str | None
 
 
 class ParserRequestDetailTemplateHandler(web.View, DependenciesMixin, CreateMixin, ListMixin):
     @aiohttp_jinja2.template("./parser_request/detail.html.j2")
     async def get(self) -> Mapping[str, Any]:
         parser_request_id = self._get_id()
+        parser_request = await self.parser_request_storage.get_detail(
+            id_=parser_request_id,
+        )
+
+        if parser_request is None:
+            raise HTTPNotFound
+
         response_data = {
             "city": self.request.query.get("city", "all_cities"),
             "from_user_year": self.request.query.get("from_user_year", 1900),
             "to_user_year": self.request.query.get("to_user_year", 2024),
             "sex": self.request.query.get("sex", "all_sex"),
         }
-        parser_request = await self.parser_request_storage.get_detail(
-            id_=parser_request_id,
-        )
 
-        # Добавляем список городов со всех спаршенных Юзеров
-        all_users = await self.vk_storage.get_users_by_parser_request_id(parser_request_id)
-        all_cities = []
-        for user in all_users:
-            city = (user.city,)
-            if city[0] not in all_cities:
-                # Добавляем только уникальные города
-                all_cities.append(city[0])
+        users = await self.vk_storage.get_users_by_parser_request_id(parser_request_id)
+        cities = set(user.city for user in users if user.city)
 
-        if parser_request is None:
-            raise HTTPNotFound
-        user_data = None
+        jwt_token = self.request.cookies.get("jwt_token")
 
-        if parser_request.parser_type == ParserTypes.VK_SIMPLE_DOWNLOAD:
-            params = self._parse()
-
-            jwt_token = self.request.cookies.get("jwt_token")
-            if jwt_token:
-                try:
-                    decoded_jwt = jwt.decode(jwt_token, "secret", algorithms=["HS256"])
-                except jwt.ExpiredSignatureError:
-                    location = self.request.app.router["logout_user"].url_for()
-                    raise web.HTTPFound(location=location)
-
-                if (
-                    response_data["city"]
-                    and response_data["from_user_year"]
-                    and response_data["to_user_year"]
-                    and response_data["sex"]
-                ):
-                    users = await self.vk_storage.get_users_by_parser_request_id_advanced_filter(
-                        parser_request_id,
-                        city=str(response_data["city"]),
-                        from_user_year=int(response_data["from_user_year"]),
-                        to_user_year=int(response_data["to_user_year"]),
-                        sex=str(response_data["sex"]),
-                    )
-                    pagination = await self.parser_request_storage.admin_pagination_users_advanced_filter(
-                        parser_request_id,
-                        page=params.page,
-                        page_size=params.page_size,
-                        filtered_city=str(response_data["city"]),
-                        filtered_year_from=str(response_data["from_user_year"]),
-                        filtered_year_to=str(response_data["to_user_year"]),
-                        filtered_sex=str(response_data["sex"]),
-                    )
-                else:
-                    users = await self.vk_storage.get_users_by_parser_request_id(
-                        parser_request_id,
-                    )
-                    pagination = await self.parser_request_storage.admin_pagination_parsed_users(
-                        parser_request_id,
-                        page=params.page,
-                        page_size=params.page_size,
-                    )
-                user_data = []
-                for user in users:
-                    user_data.append(user)
-
-                return {
-                    "users_data": user_data,
-                    "user_info": decoded_jwt,
-                    "response_data": response_data,
-                    "pagination": pagination,
-                    "parser_request": parser_request,
-                    "user_data": user_data,
-                    "all_cities": all_cities,
-                }
-            else:
-                location = self.request.app.router["admin"].url_for()
+        if jwt_token:
+            try:
+                jwt.decode(jwt_token, "secret", algorithms=["HS256"])
+            except jwt.ExpiredSignatureError:
+                location = self.request.app.router["logout_user"].url_for()
                 raise web.HTTPFound(location=location)
+
+            params = self._parse()
+            pagination = await self.parser_request_storage.admin_pagination_users_advanced_filter(
+                parser_request_id,
+                page=params.page,
+                page_size=params.page_size,
+                filtered_city=str(response_data["city"]),
+                filtered_year_from=str(response_data["from_user_year"]),
+                filtered_year_to=str(response_data["to_user_year"]),
+                filtered_sex=str(response_data["sex"]),
+            )
+
+            vk_user_ids = [item.vk_user_id for item in pagination.items]
+
+            posts = [
+                await self.vk_storage.get_posts_by_user_vk_id(
+                    user_vk_id=vk_user_id,
+                    parser_request_id=parser_request_id,
+                )
+                for vk_user_id in vk_user_ids
+            ]
+
+            pagination.items = list(zip(pagination.items, posts))
+
+            return {
+                "posts": posts,
+                "response_data": response_data,
+                "pagination": pagination,
+                "parser_request": parser_request,
+                "cities": cities,
+            }
+        else:
+            location = self.request.app.router["admin"].url_for()
+            raise web.HTTPFound(location=location)
 
     def _get_id(self) -> int:
         try:

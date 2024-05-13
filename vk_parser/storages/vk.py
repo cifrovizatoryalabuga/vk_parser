@@ -3,7 +3,7 @@ import logging
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from random import choice
-from typing import Any, TypeVar
+from typing import Any, TypeVar, List
 
 import sqlalchemy.dialects.postgresql as postgresql
 from sqlalchemy import and_, cast, delete, insert, not_, select
@@ -235,6 +235,24 @@ class VkStorage:
         return [VkGroupPost.model_validate(row) for row in res]
 
     @inject_session
+    async def get_posts_by_user_vk_id(
+        self,
+        session: AsyncSession,
+        user_vk_id: int,
+        parser_request_id: int,
+    ) -> Sequence[VkGroupPost]:
+        query = (
+            select(VkGroupPostDb)
+            .join(VkGroupDb, VkGroupDb.id == VkGroupPostDb.vk_group_id)
+            .where(
+                VkGroupPostDb.user_vk_ids.any(user_vk_id),
+                VkGroupDb.parser_request_id == parser_request_id
+            )
+        )
+        res = await session.scalars(query)
+        return [VkGroupPost.model_validate(row) for row in res]
+
+    @inject_session
     async def get_users_by_parser_request_id(
         self,
         session: AsyncSession,
@@ -418,13 +436,16 @@ def sex_convert_vk(sex: int) -> str | None:
     elif sex == 2:
         return "М"
     else:
-        raise ValueError("Invalid VK sex code: {}".format(sex))
+        return None
 
 
 def city_convert_vk(city: dict[str, Any]) -> str | None:
-    try:
-        return city["title"]
-    except KeyError:
+    if city is not None:
+        try:
+            return city["title"]
+        except KeyError:
+            return None
+    else:
         return None
 
 

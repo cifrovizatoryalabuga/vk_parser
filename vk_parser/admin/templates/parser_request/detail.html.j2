@@ -44,7 +44,7 @@
                 <select name="city" id="citySelect">
                     <option value="" disabled>Выберите город</option>
                     <option value="all_cities">Все города!</option>
-                    {% for city in all_cities %}
+                    {% for city in cities %}
                         <option value="{{ city }}"{{ city }}>{{ city }}</option>
                     {% endfor %}
                 </select>
@@ -79,46 +79,12 @@
           </form>
       </div>
       <br>
-      {% if parser_request.parser_type == "VK_DOWNLOAD_AND_PARSED_POSTS"%}
-       <table class="striped highlight">
-          <thead>
-            <tr>
-                <th>VK ID</th>
-                <th>Фамилия</th>
-                <th>Пол</th>
-                <th>Имя</th>
-                <th>Дата рождения</th>
-                <th>Последний вход в ВК</th>
-                <th>Посты</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {% for item in user_data %}
-            <tr class="waves-efffect">
-              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.vk_user_id }}</a></td>
-              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.first_name }}</a></td>
-              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.sex }}</a></td>
-              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.last_name }}</span></a></td>
-              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
-              <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
-              <td>
-              {% for post in item.posts %}
-              <a class="posts" target="_blank" rel="noopener noreferrer" href="{{ post.url }}">{{ post.text }}</a><br><br>
-              {% endfor %}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        {% elif parser_request.parser_type == "VK_SIMPLE_DOWNLOAD"%}
-
         <div class="row">
           <div class="col s12">
             <h2 class="light-blue-text darken-3">Список пользователей</h2>
           </div>
           <div class="col s12">
-            <p>Всего человек загружено : {{ user_data | length }} </p>
+            <p>Всего человек загружено : {{ pagination.meta.total }} </p>
           </div>
 
         </div>
@@ -136,11 +102,14 @@
                 <th>Город</th>
                 <th>Дата рождения</th>
                 <th>Последний вход в ВК</th>
+                {% if parser_request.parser_type == "VK_DOWNLOAD_AND_PARSED_POSTS"%}
+                  <th>Посты</th>
+                {% endif %}
             </tr>
           </thead>
 
           <tbody>
-            {% for item in pagination.items %}
+            {% for item, posts in pagination.items %}
               <tr class="waves-efffect">
                 <td><img src="{{ item.photo_100 }}" alt="User Photo" width="100" height="100"></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.vk_user_id }}</a></td>
@@ -153,6 +122,13 @@
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{{ item.city }}</a></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.birth_date %}{{ item.birth_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
                 <td><a target="_blank" rel="noopener noreferrer" href="https://vk.com/id{{ item.vk_user_id }}">{% if item.last_visit_vk_date %}{{ item.last_visit_vk_date|datetime_format("%d.%m.%Y") }}{% endif %}</a></td>
+                {% if parser_request.parser_type == "VK_DOWNLOAD_AND_PARSED_POSTS"%}
+                  <td>
+                    {% for post in posts %}
+                      <a class="posts" target="_blank" rel="noopener noreferrer" href="{{ post.url }}">{{ post.text }}</a><br><br>
+                    {% endfor %}
+                  </td>
+                {% endif %}
                 <td>
                   <span class="delete-icon" onclick="toggleDelete('{{ item.vk_user_id }}', '{{ parser_request.id }}')">&#10006;</span>
                 </td>
@@ -215,7 +191,6 @@
             {% endif %}
           {% endwith %}
         </ul>
-        {% endif %}
     </div>
     {% endif %}
   </div>
